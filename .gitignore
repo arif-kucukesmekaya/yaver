@@ -5,3 +5,4 @@ dist
 *.log
 drizzle/*.sql
 .vscode
+rules
