@@ -1,9 +1,9 @@
 import { db } from '../../core/database';
-import { users, userProfiles, userCredits, userRoles, roles } from '../../core/database/schema';
+import { users, userProfiles, userCredits, userRoles, roles, passwordResetTokens, refreshTokens } from '../../core/database/schema';
 import { hashPassword, comparePassword } from '../../shared/utils/password';
-import { generateToken } from '../../shared/utils/jwt';
-import { ConflictError, AuthenticationError, NotFoundError } from '../../shared/utils/errors';
-import { eq } from 'drizzle-orm';
+import { generateToken, generateRefreshToken, verifyRefreshToken, generateResetToken } from '../../shared/utils/jwt';
+import { ConflictError, AuthenticationError, NotFoundError, ValidationError } from '../../shared/utils/errors';
+import { eq, and, gt } from 'drizzle-orm';
 
 export interface RegisterInput {
   email: string;
@@ -78,10 +78,18 @@ export class AuthService {
       });
     }
 
-    // Generate token
-    const token = generateToken({
+    // Generate access token
+    const accessToken = generateToken({
       userId: newUser.id,
       email: newUser.email,
+    });
+
+    // Generate refresh token
+    const { token: refreshToken, expiresAt } = generateRefreshToken(newUser.id);
+    await db.insert(refreshTokens).values({
+      userId: newUser.id,
+      token: refreshToken,
+      expiresAt,
     });
 
     return {
@@ -91,7 +99,8 @@ export class AuthService {
         firstName,
         lastName,
       },
-      token,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -121,10 +130,18 @@ export class AuthService {
       throw new AuthenticationError('Invalid credentials');
     }
 
-    // Generate token
-    const token = generateToken({
+    // Generate access token
+    const accessToken = generateToken({
       userId: user.id,
       email: user.email,
+    });
+
+    // Generate refresh token
+    const { token: refreshToken, expiresAt } = generateRefreshToken(user.id);
+    await db.insert(refreshTokens).values({
+      userId: user.id,
+      token: refreshToken,
+      expiresAt,
     });
 
     return {
@@ -135,8 +152,137 @@ export class AuthService {
         lastName: user.profile?.lastName,
         credits: user.credits?.availableCredits || 0,
       },
-      token,
+      accessToken,
+      refreshToken,
     };
+  }
+
+  /**
+   * Refresh access token using refresh token
+   */
+  static async refreshAccessToken(refreshToken: string) {
+    // Verify the refresh token JWT
+    let payload;
+    try {
+      payload = verifyRefreshToken(refreshToken);
+    } catch {
+      throw new AuthenticationError('Invalid refresh token');
+    }
+
+    // Check if token exists in database and is not revoked
+    const storedToken = await db.query.refreshTokens.findFirst({
+      where: and(
+        eq(refreshTokens.token, refreshToken),
+        eq(refreshTokens.revoked, false),
+        gt(refreshTokens.expiresAt, new Date())
+      ),
+    });
+
+    if (!storedToken) {
+      throw new AuthenticationError('Refresh token not found or expired');
+    }
+
+    // Get user
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, payload.userId),
+    });
+
+    if (!user) {
+      throw new AuthenticationError('User not found');
+    }
+
+    // Generate new access token
+    const accessToken = generateToken({
+      userId: user.id,
+      email: user.email,
+    });
+
+    return {
+      accessToken,
+    };
+  }
+
+  /**
+   * Revoke refresh token (logout)
+   */
+  static async revokeRefreshToken(refreshToken: string) {
+    await db
+      .update(refreshTokens)
+      .set({ revoked: true })
+      .where(eq(refreshTokens.token, refreshToken));
+  }
+
+  /**
+   * Request password reset - generates token
+   */
+  static async forgotPassword(email: string) {
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    // Don't reveal if email exists for security
+    if (!user) {
+      return { message: 'If the email exists, a reset link has been sent' };
+    }
+
+    // Generate reset token
+    const { token, expiresAt } = generateResetToken();
+
+    // Store token in database
+    await db.insert(passwordResetTokens).values({
+      userId: user.id,
+      token,
+      expiresAt,
+    });
+
+    // In a real app, send email here
+    // For demo, return the token (in production, never expose this!)
+    return {
+      message: 'If the email exists, a reset link has been sent',
+      // DEMO ONLY - remove in production
+      _demoToken: token,
+    };
+  }
+
+  /**
+   * Reset password using token
+   */
+  static async resetPassword(token: string, newPassword: string) {
+    // Find valid token
+    const resetToken = await db.query.passwordResetTokens.findFirst({
+      where: and(
+        eq(passwordResetTokens.token, token),
+        eq(passwordResetTokens.used, false),
+        gt(passwordResetTokens.expiresAt, new Date())
+      ),
+    });
+
+    if (!resetToken) {
+      throw new ValidationError('Invalid or expired reset token');
+    }
+
+    // Hash new password
+    const passwordHash = await hashPassword(newPassword);
+
+    // Update password
+    await db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, resetToken.userId));
+
+    // Mark token as used
+    await db
+      .update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.id, resetToken.id));
+
+    // Revoke all refresh tokens for this user (force re-login)
+    await db
+      .update(refreshTokens)
+      .set({ revoked: true })
+      .where(eq(refreshTokens.userId, resetToken.userId));
+
+    return { message: 'Password reset successfully' };
   }
 
   /**
@@ -175,10 +321,10 @@ export class AuthService {
       },
       subscription: userData.subscriptions[0]
         ? {
-            plan: userData.subscriptions[0].plan?.name,
-            isActive: userData.subscriptions[0].isActive,
-            endDate: userData.subscriptions[0].endDate,
-          }
+          plan: userData.subscriptions[0].plan?.name,
+          isActive: userData.subscriptions[0].isActive,
+          endDate: userData.subscriptions[0].endDate,
+        }
         : null,
     };
   }

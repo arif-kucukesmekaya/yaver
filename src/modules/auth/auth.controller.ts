@@ -1,5 +1,11 @@
 import { AuthService } from './auth.service';
-import type { RegisterInput, LoginInput } from './auth.schema';
+import type {
+  RegisterInput,
+  LoginInput,
+  RefreshTokenInput,
+  ForgotPasswordInput,
+  ResetPasswordInput
+} from './auth.schema';
 
 export class AuthController {
   /**
@@ -31,6 +37,63 @@ export class AuthController {
       success: true,
       message: 'Login successful',
       data: result,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Refresh access token
+   */
+  static async refreshToken(c: any) {
+    const { refreshToken } = c.req.valid('json') as RefreshTokenInput;
+    const result = await AuthService.refreshAccessToken(refreshToken);
+
+    return c.json({
+      success: true,
+      message: 'Token refreshed successfully',
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Logout - revoke refresh token
+   */
+  static async logout(c: any) {
+    const { refreshToken } = c.req.valid('json') as RefreshTokenInput;
+    await AuthService.revokeRefreshToken(refreshToken);
+
+    return c.json({
+      success: true,
+      message: 'Logged out successfully',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Request password reset
+   */
+  static async forgotPassword(c: any) {
+    const { email } = c.req.valid('json') as ForgotPasswordInput;
+    const result = await AuthService.forgotPassword(email);
+
+    return c.json({
+      success: true,
+      ...result,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Reset password with token
+   */
+  static async resetPassword(c: any) {
+    const { token, password } = c.req.valid('json') as ResetPasswordInput;
+    const result = await AuthService.resetPassword(token, password);
+
+    return c.json({
+      success: true,
+      ...result,
       timestamp: new Date().toISOString(),
     });
   }

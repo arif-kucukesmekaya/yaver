@@ -141,6 +141,105 @@ export const apiDocumentation = {
         },
       },
     },
+    '/auth/refresh': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Refresh access token',
+        description: 'Get a new access token using a valid refresh token',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['refreshToken'],
+                properties: {
+                  refreshToken: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'New access token returned' },
+          '401': { description: 'Invalid or expired refresh token' },
+        },
+      },
+    },
+    '/auth/logout': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Logout',
+        description: 'Revoke the refresh token to logout',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['refreshToken'],
+                properties: {
+                  refreshToken: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Logged out successfully' },
+        },
+      },
+    },
+    '/auth/forgot-password': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Request password reset',
+        description: 'Send password reset link to email',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Reset link sent if email exists' },
+        },
+      },
+    },
+    '/auth/reset-password': {
+      post: {
+        tags: ['Authentication'],
+        summary: 'Reset password',
+        description: 'Reset password using the token from forgot-password email',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['token', 'password'],
+                properties: {
+                  token: { type: 'string' },
+                  password: { type: 'string', minLength: 6 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Password reset successfully' },
+          '400': { description: 'Invalid or expired token' },
+        },
+      },
+    },
     '/products': {
       get: {
         tags: ['Products'],

@@ -5,8 +5,8 @@ import { authMiddleware } from '../../core/middleware/auth';
 import { openAIService } from './openai.service';
 import { CreditService } from '../credits/credit.service';
 import { db } from '../../core/database';
-import { products, marketplaceListings, categories } from '../../core/database/schema';
-import { eq, and } from 'drizzle-orm';
+import { products, marketplaceListings, categories, marketplaceConfigs } from '../../core/database/schema';
+import { eq, and, inArray } from 'drizzle-orm';
 import { NotFoundError } from '../../shared/utils/errors';
 
 const aiRoutes = new Hono();
@@ -19,6 +19,32 @@ const generateContentSchema = z.object({
   productId: z.number().int().positive(),
   marketplaceIds: z.array(z.number().int().positive()).min(1),
 });
+
+/**
+ * Calculate total credit cost based on marketplace configs
+ * Trendyol = 1, Hepsiburada = 1, Amazon = 2 (from JSONB config)
+ */
+async function calculateCreditCost(marketplaceIds: number[]): Promise<{ total: number; breakdown: Record<number, number> }> {
+  const configs = await db.query.marketplaceConfigs.findMany({
+    where: inArray(marketplaceConfigs.marketplaceId, marketplaceIds),
+    with: {
+      marketplace: true,
+    },
+  });
+
+  const breakdown: Record<number, number> = {};
+  let total = 0;
+
+  for (const marketplaceId of marketplaceIds) {
+    const config = configs.find(c => c.marketplaceId === marketplaceId);
+    const configData = config?.config as { credit_cost?: number } | null;
+    const cost = configData?.credit_cost ?? 1; // Default to 1 if not specified
+    breakdown[marketplaceId] = cost;
+    total += cost;
+  }
+
+  return { total, breakdown };
+}
 
 // POST /ai/generate-content - Generate marketplace-specific content
 aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), async (c) => {
@@ -40,8 +66,8 @@ aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), as
     throw new NotFoundError('Product not found');
   }
 
-  // Check credits (1 credit per marketplace)
-  const requiredCredits = marketplaceIds.length;
+  // Calculate credit cost from marketplace configs (Amazon = 2, others = 1)
+  const { total: requiredCredits, breakdown: creditBreakdown } = await calculateCreditCost(marketplaceIds);
   const hasCredits = await CreditService.hasEnoughCredits(user.id, requiredCredits);
 
   if (!hasCredits) {
@@ -49,11 +75,12 @@ aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), as
     return c.json({
       success: false,
       error: `Insufficient credits. Required: ${requiredCredits}, Available: ${available}`,
+      creditBreakdown,
       timestamp: new Date().toISOString(),
     }, 402);
   }
 
-  // Update product status
+  // Update product status to processing
   await db
     .update(products)
     .set({ productStatus: 'processing' })
@@ -68,31 +95,36 @@ aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), as
       marketplaceIds
     );
 
-    // Save to database
-    const savedListings = await Promise.all(
-      generatedContents.map((content, index) =>
-        db
-          .insert(marketplaceListings)
-          .values({
-            productId,
-            marketplaceId: marketplaceIds[index] as number,
-            generatedTitle: content.title,
-            generatedDescription: content.description,
-            listingStatus: 'draft',
-          })
-          .returning()
-          .then((rows) => rows[0])
-      )
-    );
+    // Use transaction to ensure atomicity: save listings + deduct credits together
+    const savedListings = await db.transaction(async (tx) => {
+      // Save listings to database
+      const listings = await Promise.all(
+        generatedContents.map((content, index) =>
+          tx
+            .insert(marketplaceListings)
+            .values({
+              productId,
+              marketplaceId: marketplaceIds[index] as number,
+              generatedTitle: content.title,
+              generatedDescription: content.description,
+              listingStatus: 'draft',
+            })
+            .returning()
+            .then((rows) => rows[0])
+        )
+      );
 
-    // Deduct credits
-    await CreditService.deductCredits(
-      user.id,
-      requiredCredits,
-      `AI content generation for product #${productId}`
-    );
+      // Deduct credits within the same transaction
+      await CreditService.deductCredits(
+        user.id,
+        requiredCredits,
+        `AI content generation for product #${productId} (${marketplaceIds.length} marketplaces)`
+      );
 
-    // Update product status
+      return listings;
+    });
+
+    // Update product status to completed
     await db
       .update(products)
       .set({ productStatus: 'completed' })
@@ -104,6 +136,7 @@ aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), as
       data: {
         productId,
         creditsUsed: requiredCredits,
+        creditBreakdown,
         listings: savedListings,
         generatedContents,
       },
@@ -117,7 +150,7 @@ aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), as
       .where(eq(products.id, productId));
 
     console.error('AI generation error:', error);
-    
+
     return c.json({
       success: false,
       error: error instanceof Error ? error.message : 'Content generation failed',
@@ -126,7 +159,7 @@ aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), as
   }
 });
 
-// GET /ai/preview - Preview content without spending credits
+// POST /ai/preview - Preview content without spending credits
 aiRoutes.post('/preview', zValidator('json', z.object({
   rawUserPrompt: z.string().min(10),
   brandName: z.string().optional(),
@@ -143,6 +176,9 @@ aiRoutes.post('/preview', zValidator('json', z.object({
     categoryName = category?.name;
   }
 
+  // Get credit cost for info (not charged)
+  const { total: creditCost } = await calculateCreditCost([marketplaceId]);
+
   try {
     const content = await openAIService.generateMarketplaceContent({
       rawUserPrompt,
@@ -154,7 +190,10 @@ aiRoutes.post('/preview', zValidator('json', z.object({
     return c.json({
       success: true,
       message: 'Preview generated (no credits charged)',
-      data: content,
+      data: {
+        ...content,
+        creditCost, // Show how much it would cost
+      },
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

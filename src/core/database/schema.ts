@@ -43,6 +43,32 @@ export const userRoles = pgTable("user_roles", {
   pk: primaryKey({ columns: [table.userId, table.roleId] }),
 }));
 
+// Password reset tokens table
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  userIdx: index("password_reset_user_idx").on(table.userId),
+  tokenIdx: index("password_reset_token_idx").on(table.token),
+}));
+
+// Refresh tokens table
+export const refreshTokens = pgTable("refresh_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  token: varchar("token", { length: 500 }).notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  revoked: boolean("revoked").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  userIdx: index("refresh_token_user_idx").on(table.userId),
+  tokenIdx: index("refresh_token_idx").on(table.token),
+}));
+
 // ==================== MODÜL 2: Finans ve Abonelik ====================
 
 export const subscriptionPlans = pgTable("subscription_plans", {

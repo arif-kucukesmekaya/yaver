@@ -24,7 +24,7 @@ const createProductSchema = z.object({
   categoryId: z.number().int().positive().optional(),
   rawUserPrompt: z.string().min(10).max(5000),
   marketplaceIds: z.array(z.number().int().positive()).optional(),
-  imageUrl: z.string().max(512).optional(),
+  imageUrl: z.string().url('Invalid image URL format').max(512).optional(),
 });
 
 const updateProductSchema = z.object({
@@ -330,6 +330,81 @@ productRoutes.get('/:id/listings', async (c) => {
   return c.json({
     success: true,
     data: listings,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// PATCH /products/:id/listings/:marketplaceId - Edit a listing
+const updateListingSchema = z.object({
+  generatedTitle: z.string().min(5).max(500).optional(),
+  generatedDescription: z.string().min(10).max(10000).optional(),
+  listingStatus: z.enum(['draft', 'published', 'error']).optional(),
+});
+
+productRoutes.patch('/:id/listings/:marketplaceId', zValidator('json', updateListingSchema), async (c) => {
+  const user = c.get('user');
+  const productId = parseInt(c.req.param('id'));
+  const marketplaceId = parseInt(c.req.param('marketplaceId'));
+  const updates = c.req.valid('json');
+
+  if (isNaN(productId) || isNaN(marketplaceId)) {
+    throw new ValidationError('Invalid product or marketplace ID');
+  }
+
+  // Check product exists and belongs to user
+  const product = await db.query.products.findFirst({
+    where: and(eq(products.id, productId), eq(products.userId, user.id)),
+  });
+
+  if (!product) {
+    throw new NotFoundError('Product not found');
+  }
+
+  // Check listing exists
+  const existingListing = await db.query.marketplaceListings.findFirst({
+    where: and(
+      eq(marketplaceListings.productId, productId),
+      eq(marketplaceListings.marketplaceId, marketplaceId)
+    ),
+  });
+
+  if (!existingListing) {
+    throw new NotFoundError('Listing not found for this marketplace');
+  }
+
+  // Update listing
+  const [updatedListing] = await db
+    .update(marketplaceListings)
+    .set({
+      ...updates,
+      updatedAt: new Date(),
+    })
+    .where(and(
+      eq(marketplaceListings.productId, productId),
+      eq(marketplaceListings.marketplaceId, marketplaceId)
+    ))
+    .returning();
+
+  if (!updatedListing) {
+    throw new Error('Failed to update listing');
+  }
+
+  // Fetch with marketplace data
+  const listing = await db.query.marketplaceListings.findFirst({
+    where: eq(marketplaceListings.id, updatedListing.id),
+    with: {
+      marketplace: {
+        with: {
+          configs: true,
+        },
+      },
+    },
+  });
+
+  return c.json({
+    success: true,
+    message: 'Listing updated successfully',
+    data: listing,
     timestamp: new Date().toISOString(),
   });
 });
