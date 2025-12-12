@@ -17,6 +17,7 @@ import {
   uploadRoutes,
   marketplaceRoutes,
   categoriesRoutes,
+  adminRoutes,
 } from './modules';
 
 const app = new Hono();
@@ -71,6 +72,9 @@ app.route('/products', productsRoutes);
 app.route('/credits', creditsRoutes);
 app.route('/marketplaces', marketplaceRoutes);
 app.route('/categories', categoriesRoutes);
+
+// Admin routes (protected by auth + admin middleware)
+app.route('/admin', adminRoutes);
 
 // 404 handler
 app.notFound((c) => {

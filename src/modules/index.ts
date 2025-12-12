@@ -5,3 +5,4 @@ export { default as aiRoutes } from './ai/ai.routes';
 export { default as uploadRoutes } from './upload/upload.routes';
 export { default as marketplaceRoutes } from './marketplace/marketplace.routes';
 export { default as categoriesRoutes } from './categories/categories.routes';
+export { default as adminRoutes } from './admin/admin.routes';

@@ -47,6 +47,7 @@ export const apiDocumentation = {
     { name: 'Upload', description: 'File upload endpoints' },
     { name: 'Marketplaces', description: 'Marketplace management endpoints' },
     { name: 'Categories', description: 'Category management endpoints' },
+    { name: 'Admin', description: 'Admin panel endpoints (requires admin role)' },
   ],
   paths: {
     '/': {
@@ -596,6 +597,174 @@ export const apiDocumentation = {
         responses: {
           '200': { description: 'Child categories returned' },
           '404': { description: 'Category not found' },
+        },
+      },
+    },
+    '/admin/dashboard': {
+      get: {
+        tags: ['Admin'],
+        summary: 'Get admin dashboard',
+        description: 'Get statistics and recent activity for admin dashboard',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          '200': { description: 'Dashboard data returned' },
+          '401': { description: 'Not authenticated' },
+          '403': { description: 'Admin access required' },
+        },
+      },
+    },
+    '/admin/users': {
+      get: {
+        tags: ['Admin'],
+        summary: 'List all users',
+        description: 'Get paginated list of all users with credits and roles',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          '200': { description: 'Users list returned' },
+          '403': { description: 'Admin access required' },
+        },
+      },
+    },
+    '/admin/users/{userId}': {
+      get: {
+        tags: ['Admin'],
+        summary: 'Get user details',
+        description: 'Get detailed user information including products and transactions',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'userId', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        responses: {
+          '200': { description: 'User details returned' },
+          '404': { description: 'User not found' },
+        },
+      },
+    },
+    '/admin/users/{userId}/credits': {
+      post: {
+        tags: ['Admin'],
+        summary: 'Adjust user credits',
+        description: 'Add or remove credits from a user account',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'userId', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['amount', 'reason'],
+                properties: {
+                  amount: { type: 'integer', example: 50 },
+                  reason: { type: 'string', example: 'Bonus credits for feedback' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Credits adjusted successfully' },
+          '404': { description: 'User not found' },
+        },
+      },
+    },
+    '/admin/users/{userId}/roles': {
+      post: {
+        tags: ['Admin'],
+        summary: 'Assign role to user',
+        description: 'Assign a role to a user',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'userId', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['roleId'],
+                properties: {
+                  roleId: { type: 'integer', example: 1 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Role assigned' },
+          '404': { description: 'User or role not found' },
+        },
+      },
+    },
+    '/admin/roles': {
+      get: {
+        tags: ['Admin'],
+        summary: 'List all roles',
+        description: 'Get all available roles',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          '200': { description: 'Roles list returned' },
+        },
+      },
+    },
+    '/admin/marketplaces': {
+      get: {
+        tags: ['Admin'],
+        summary: 'List marketplaces with configs',
+        description: 'Get all marketplaces with their JSONB configurations',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          '200': { description: 'Marketplaces with configs returned' },
+        },
+      },
+    },
+    '/admin/marketplaces/{id}/config': {
+      patch: {
+        tags: ['Admin'],
+        summary: 'Update marketplace config',
+        description: 'Update marketplace JSONB configuration (credit_cost, title limits, etc.)',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  max_title_length: { type: 'integer', example: 150 },
+                  description_max_length: { type: 'integer', example: 5000 },
+                  credit_cost: { type: 'integer', example: 2 },
+                  language: { type: 'string', enum: ['tr', 'en'] },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Config updated' },
+          '404': { description: 'Marketplace not found' },
+        },
+      },
+    },
+    '/admin/plans': {
+      get: {
+        tags: ['Admin'],
+        summary: 'List subscription plans',
+        description: 'Get all subscription plans with pricing',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          '200': { description: 'Plans list returned' },
         },
       },
     },
