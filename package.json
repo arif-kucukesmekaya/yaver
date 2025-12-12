@@ -1,0 +1,49 @@
+{
+  "name": "sellerai",
+  "version": "1.0.0",
+  "description": "E-commerce AI Content Optimization Platform",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "start": "NODE_ENV=production bun run src/index.ts",
+    "build": "bun build src/index.ts --target=bun --outdir=dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/core/database/migrate.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "bun run scripts/seed.ts",
+    "clean": "rm -rf dist node_modules"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.7",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-validator": "^0.7.5",
+    "@types/multer": "^2.0.0",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.10.8",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.0.2",
+    "postgres": "^3.4.5",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "drizzle-kit": "^0.28.1",
+    "eslint": "^9.39.1",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3"
+  }
+}
