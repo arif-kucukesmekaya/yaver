@@ -4,7 +4,7 @@ import { cors } from 'hono/cors';
 import { prettyJSON } from 'hono/pretty-json';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { swaggerUI } from '@hono/swagger-ui';
-import { errorHandler } from './core/middleware';
+import { errorHandler, rateLimiters } from './core/middleware';
 import { logger } from './shared/utils/logger';
 import { openAPISpec } from './docs/openapi';
 
@@ -25,9 +25,6 @@ const app = new Hono();
 app.use('*', honoLogger());
 app.use('*', cors());
 app.use('*', prettyJSON());
-
-// Global rate limiter (optional, can be disabled)
-// app.use('*', rateLimiters.global);
 
 // Serve static files (uploads)
 app.use('/uploads/*', serveStatic({ root: './' }));
@@ -57,11 +54,21 @@ app.get('/', (c) => {
 });
 
 // Mount module routes with rate limiters
+// Auth routes with stricter rate limiting (10 requests per 15 min)
+app.use('/auth/*', rateLimiters.auth);
 app.route('/auth', authRoutes);
+
+// AI routes with strict rate limiting (5 requests per minute)
+app.use('/ai/*', rateLimiters.ai);
+app.route('/ai', aiRoutes);
+
+// Upload routes with rate limiting (10 uploads per minute)
+app.use('/upload/*', rateLimiters.upload);
+app.route('/upload', uploadRoutes);
+
+// Other routes (no specific rate limit, can add global if needed)
 app.route('/products', productsRoutes);
 app.route('/credits', creditsRoutes);
-app.route('/ai', aiRoutes);
-app.route('/upload', uploadRoutes);
 app.route('/marketplaces', marketplaceRoutes);
 app.route('/categories', categoriesRoutes);
 

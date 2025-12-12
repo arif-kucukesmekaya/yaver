@@ -1,8 +1,6 @@
-<<<<<<< HEAD
-# sellerai
-A platform that enables e-commerce sellers to manage product titles, descriptions, and images using AI for all their marketplaces from a single place.
-=======
 # SellerAI - E-Ticaret İçerik Optimizasyon Platformu
+
+A platform that enables e-commerce sellers to manage product titles, descriptions, and images using AI for all their marketplaces from a single place.
 
 AI destekli SaaS çözümü ile Trendyol, Hepsiburada ve Amazon için otomatik içerik üretimi.
 
@@ -107,7 +105,7 @@ psql $DATABASE_URL    # PostgreSQL shell
 ## 🏗️ Tech Stack
 
 - **Runtime:** Bun
-- **Backend:** ElysiaJS
+- **Backend:** Hono
 - **Database:** PostgreSQL 16
 - **ORM:** Drizzle ORM
 - **Frontend:** Next.js 14 + Tailwind CSS (gelecek)
@@ -118,7 +116,8 @@ psql $DATABASE_URL    # PostgreSQL shell
 ✅ Veritabanı schema tamamlandı  
 ✅ Trigger'lar aktif  
 ✅ Seed verisi yüklendi  
-⏳ Backend API (gelecek)  
+✅ Backend API tamamlandı  
+✅ Rate limiting aktif  
 ⏳ Frontend Dashboard (gelecek)  
 ⏳ Landing Page (gelecek)
 
@@ -146,6 +145,5 @@ psql $DATABASE_URL -c "SELECT * FROM credit_transactions ORDER BY created_at DES
 
 ---
 
-**Versiyon:** 1.0.0  
-**Son Güncelleme:** 11.12.2025
->>>>>>> 27ebe95 (backend v1)
+**Versiyon:** 2.0.0  
+**Son Güncelleme:** 12.12.2025
