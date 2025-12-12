@@ -1,4 +1,26 @@
-import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
+import { describe, test, expect, beforeAll } from 'bun:test';
+
+// API Response types
+interface ApiResponse {
+    success: boolean;
+    message?: string;
+    data?: Record<string, unknown>;
+    _demoToken?: string;
+}
+
+interface AuthResponse extends ApiResponse {
+    data: {
+        accessToken: string;
+        refreshToken: string;
+        user: {
+            id: number;
+            email: string;
+            firstName?: string;
+            lastName?: string;
+            credits?: number;
+        };
+    };
+}
 
 // Test configuration
 const BASE_URL = 'http://localhost:8881';
@@ -26,7 +48,7 @@ describe('Authentication Flow', () => {
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as AuthResponse;
 
         expect(response.status).toBe(201);
         expect(data.success).toBe(true);
@@ -49,7 +71,7 @@ describe('Authentication Flow', () => {
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse;
 
         expect(response.status).toBe(409);
         expect(data.success).toBe(false);
@@ -65,7 +87,7 @@ describe('Authentication Flow', () => {
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as AuthResponse;
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -87,7 +109,7 @@ describe('Authentication Flow', () => {
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse;
 
         expect(response.status).toBe(401);
         expect(data.success).toBe(false);
@@ -98,7 +120,7 @@ describe('Authentication Flow', () => {
             headers: { 'Authorization': `Bearer ${accessToken}` },
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse & { data: { email: string; credits: unknown } };
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -109,7 +131,7 @@ describe('Authentication Flow', () => {
     test('GET /auth/me - should reject without token', async () => {
         const response = await fetch(`${BASE_URL}/auth/me`);
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse;
 
         expect(response.status).toBe(401);
         expect(data.success).toBe(false);
@@ -122,7 +144,7 @@ describe('Authentication Flow', () => {
             body: JSON.stringify({ refreshToken }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse & { data: { accessToken: string } };
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -141,7 +163,7 @@ describe('Password Reset Flow', () => {
             body: JSON.stringify({ email: testUserEmail }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse;
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -157,7 +179,7 @@ describe('Password Reset Flow', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: testUserEmail }),
         });
-        const forgotData = await forgotResponse.json();
+        const forgotData = await forgotResponse.json() as ApiResponse;
         const resetToken = forgotData._demoToken;
 
         // Reset password
@@ -171,7 +193,7 @@ describe('Password Reset Flow', () => {
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse;
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -202,14 +224,14 @@ describe('Credits System', () => {
                 password: 'NewPassword123!',
             }),
         });
-        const loginData = await loginResponse.json();
+        const loginData = await loginResponse.json() as AuthResponse;
         accessToken = loginData.data.accessToken;
 
         const response = await fetch(`${BASE_URL}/credits`, {
             headers: { 'Authorization': `Bearer ${accessToken}` },
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse & { data: { availableCredits: number } };
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -222,7 +244,7 @@ describe('Credits System', () => {
             headers: { 'Authorization': `Bearer ${accessToken}` },
         });
 
-        const data = await response.json();
+        const data = await response.json() as ApiResponse & { data: unknown[] };
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -233,7 +255,7 @@ describe('Credits System', () => {
 describe('Health Check', () => {
     test('GET / - should return API status', async () => {
         const response = await fetch(`${BASE_URL}/`);
-        const data = await response.json();
+        const data = await response.json() as ApiResponse & { version: string };
 
         expect(response.status).toBe(200);
         expect(data.success).toBe(true);
@@ -243,7 +265,7 @@ describe('Health Check', () => {
 
     test('GET /nonexistent - should return 404', async () => {
         const response = await fetch(`${BASE_URL}/nonexistent`);
-        const data = await response.json();
+        const data = await response.json() as ApiResponse;
 
         expect(response.status).toBe(404);
         expect(data.success).toBe(false);
