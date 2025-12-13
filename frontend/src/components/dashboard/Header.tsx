@@ -26,10 +26,13 @@ export function DashboardHeader({ user, creditBalance = 0, onLogout }: Dashboard
     const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <header className="sticky top-0 z-40 h-16 bg-black/40 backdrop-blur-xl border-b border-white/[0.08]">
-            <div className="h-full px-6 flex items-center justify-between gap-4">
-                {/* Search */}
-                <div className="flex-1 max-w-xl">
+        <header className="sticky top-0 z-30 h-16 bg-black/40 backdrop-blur-xl border-b border-white/[0.08]">
+            <div className="h-full px-4 lg:px-6 flex items-center justify-between gap-4">
+                {/* Spacer for mobile hamburger */}
+                <div className="w-12 lg:hidden" />
+
+                {/* Search - hidden on mobile */}
+                <div className="flex-1 max-w-xl hidden md:block">
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                         <input
