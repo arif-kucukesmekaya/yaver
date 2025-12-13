@@ -242,20 +242,37 @@ function StepTwo({ images, onUpload, onRemove }: { images: File[]; onUpload: (e:
 }
 
 function StepThree({ marketplaces, selected, onToggle }: { marketplaces: Marketplace[]; selected: number[]; onToggle: (id: number) => void }) {
+    const getMarketplaceLogo = (name: string) => {
+        const logos: Record<string, string> = {
+            'trendyol': '/logo/trendyol.png',
+            'hepsiburada': '/logo/hepsiburada.png',
+            'amazon': '/logo/amazon.png',
+        };
+        return logos[name.toLowerCase()] || null;
+    };
+
     return (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
             <div>
                 <h2 className="text-lg font-semibold text-white mb-1">Pazaryerlerini Seç</h2>
                 <p className="text-sm text-white/50">İçerik üretmek istediğiniz pazaryerlerini seçin</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {marketplaces.map((mp) => {
                     const isSelected = selected.includes(mp.id);
                     const cost = mp.configs?.[0]?.config?.credit_cost ?? 1;
+                    const logo = getMarketplaceLogo(mp.name);
                     return (
                         <button key={mp.id} onClick={() => onToggle(mp.id)} className={cn('p-4 rounded-xl border-2 text-left transition-all', isSelected ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/10 bg-white/[0.02] hover:border-white/20')}>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-white">{mp.name}</span>
+                            <div className="flex items-center gap-3 mb-3">
+                                {logo ? (
+                                    <img src={logo} alt={mp.name} className="w-10 h-10 object-cover rounded-lg" />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                                        <Store className="w-5 h-5 text-white/40" />
+                                    </div>
+                                )}
+                                <span className="font-medium text-white flex-1">{mp.name}</span>
                                 <div className={cn('w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all', isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-white/30')}>
                                     {isSelected && <Check className="w-3 h-3 text-white" />}
                                 </div>

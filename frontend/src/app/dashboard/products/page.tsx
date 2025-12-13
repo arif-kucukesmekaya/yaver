@@ -189,7 +189,7 @@ function ProductGridCard({ product, index }: { product: Product; index: number }
         >
             <Link
                 href={`/dashboard/products/${product.id}`}
-                className="block group bg-white/[0.02] border border-white/[0.08] rounded-2xl overflow-hidden hover:border-white/[0.15] transition-all"
+                className="block group bg-white/[0.02] border border-white/[0.08] rounded-2xl overflow-hidden hover:border-white/[0.15] transition-all h-full"
             >
                 <div className="aspect-video bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center relative">
                     {product.sourceImages?.[0]?.imageUrl ? (
@@ -211,15 +211,15 @@ function ProductGridCard({ product, index }: { product: Product; index: number }
                     </div>
                 </div>
 
-                <div className="p-4">
+                <div className="p-4 flex flex-col h-[140px]">
                     <h3 className="font-medium text-white mb-1 truncate">
                         {product.brandName || 'İsimsiz Ürün'}
                     </h3>
-                    <p className="text-sm text-white/40 line-clamp-2">
+                    <p className="text-sm text-white/40 line-clamp-2 flex-1">
                         {product.rawUserPrompt || 'Açıklama yok'}
                     </p>
 
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.05]">
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/[0.05]">
                         <div className="flex items-center gap-2">
                             {product.listings && product.listings.length > 0 && (
                                 <div className="flex items-center gap-1 text-xs text-white/40">

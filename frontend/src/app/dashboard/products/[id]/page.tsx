@@ -163,7 +163,6 @@ export default function ProductDetailPage() {
                     <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-6">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-semibold text-white">Pazaryeri İçerikleri</h3>
-                            <div className="flex items-center gap-2 text-sm text-white/40"><Sparkles className="w-4 h-4" />AI tarafından üretildi</div>
                         </div>
 
                         {product.listings && product.listings.length > 0 ? (
@@ -199,13 +198,29 @@ function ListingCard({ listing }: { listing: MarketplaceListing }) {
 
     const statusConfig = listingStatusConfig[listing.listingStatus];
 
+    const getMarketplaceLogo = (name: string | undefined) => {
+        if (!name) return null;
+        const logos: Record<string, string> = {
+            'trendyol': '/logo/trendyol.png',
+            'hepsiburada': '/logo/hepsiburada.png',
+            'amazon': '/logo/amazon.png',
+        };
+        return logos[name.toLowerCase()] || null;
+    };
+
+    const logo = getMarketplaceLogo(listing.marketplace?.name);
+
     return (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-white/5 border border-white/[0.08] rounded-xl">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-                        <Package className="w-5 h-5 text-indigo-400" />
-                    </div>
+                    {logo ? (
+                        <img src={logo} alt={listing.marketplace?.name} className="w-10 h-10 object-cover rounded-lg" />
+                    ) : (
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+                            <Package className="w-5 h-5 text-indigo-400" />
+                        </div>
+                    )}
                     <div>
                         <p className="font-medium text-white">{listing.marketplace?.name}</p>
                         <span className={cn('text-xs', statusConfig.color)}>{statusConfig.label}</span>
