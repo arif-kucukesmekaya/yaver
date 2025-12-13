@@ -51,11 +51,29 @@ class ApiClient {
                         }
                     }
                 }
-                throw new Error(data.error || 'Request failed');
+
+                // Handle rate limiting
+                if (response.status === 429) {
+                    throw new Error('Too many requests');
+                }
+
+                // Handle server errors
+                if (response.status >= 500) {
+                    throw new Error('Internal server error');
+                }
+
+                throw new Error(data.error || data.message || 'Request failed');
             }
 
             return data;
         } catch (error) {
+            // Handle network errors
+            if (error instanceof TypeError && error.message === 'Failed to fetch') {
+                console.error('Network Error:', error);
+                throw new Error('Failed to fetch');
+            }
+
+            // Log other errors
             console.error('API Error:', error);
             throw error;
         }
