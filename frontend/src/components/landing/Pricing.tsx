@@ -66,7 +66,7 @@ const plans = [
 
 export function Pricing() {
     return (
-        <section id="pricing" className="py-32 bg-black relative overflow-hidden">
+        <section id="pricing" className="py-32 relative overflow-hidden">
             {/* Background */}
             <div className="absolute inset-0">
                 <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl" />

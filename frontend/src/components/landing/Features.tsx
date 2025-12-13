@@ -69,7 +69,7 @@ const itemVariants = {
 
 export function Features() {
     return (
-        <section id="features" className="py-32 bg-black relative overflow-hidden">
+        <section id="features" className="py-32 relative overflow-hidden">
             {/* Background elements */}
             <div className="absolute top-1/4 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
             <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />

@@ -55,8 +55,8 @@ function FAQItem({ question, answer, isOpen, onClick }: {
             <button
                 onClick={onClick}
                 className={`w-full flex items-center justify-between p-6 rounded-2xl border transition-all duration-300 text-left ${isOpen
-                        ? 'bg-white/[0.05] border-white/10'
-                        : 'bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10'
+                    ? 'bg-white/[0.05] border-white/10'
+                    : 'bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10'
                     }`}
             >
                 <span className="text-lg font-medium text-white pr-4">{question}</span>
