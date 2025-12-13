@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, Check, Info, X } from 'lucide-react';
 
 export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +16,7 @@ export default function RegisterPage() {
         lastName: '',
     });
     const [error, setError] = useState('');
+    const [googleMessage, setGoogleMessage] = useState(false);
 
     // Password validation
     const passwordChecks = {
@@ -63,22 +64,213 @@ export default function RegisterPage() {
     };
 
     const handleGoogleSignup = () => {
-        // TODO: Implement Google OAuth
-        alert('Google ile kayıt yakında aktif olacak');
+        setGoogleMessage(true);
+        setTimeout(() => setGoogleMessage(false), 4000);
     };
 
     return (
-        <div className="h-screen flex bg-black overflow-hidden">
-            {/* Left side - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8">
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-full max-w-md"
-                >
-                    {/* Logo */}
-                    <div className="mb-4">
+        <>
+            {/* Google OAuth Toast */}
+            <AnimatePresence>
+                {googleMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 bg-indigo-500/90 backdrop-blur-sm border border-indigo-400/20 rounded-xl shadow-lg"
+                    >
+                        <Info className="w-5 h-5 text-white" />
+                        <span className="text-white text-sm font-medium">Google ile kayıt yakında aktif olacak!</span>
+                        <button onClick={() => setGoogleMessage(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
+                            <X className="w-4 h-4 text-white/70" />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <div className="h-screen flex bg-black overflow-hidden">
+                {/* Left side - Form */}
+                <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full max-w-md"
+                    >
+                        {/* Logo */}
+                        <div className="mb-4">
+                            <Link
+                                href="/"
+                                className="text-2xl font-bold text-white"
+                                style={{ fontFamily: 'var(--font-space), system-ui, sans-serif' }}
+                            >
+                                yaver
+                            </Link>
+                        </div>
+
+                        {/* Header */}
+                        <div className="mb-4">
+                            <h1 className="text-2xl font-bold text-white mb-1">
+                                Hesap oluşturun
+                            </h1>
+                            <p className="text-white/50 text-sm">
+                                Hemen ücretsiz başlayın
+                            </p>
+                        </div>
+
+                        {/* Google Signup */}
+                        <button
+                            onClick={handleGoogleSignup}
+                            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm hover:bg-white/10 transition-colors mb-4"
+                        >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                            </svg>
+                            Google ile kayıt ol
+                        </button>
+
+                        {/* Divider */}
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="flex-1 h-px bg-white/10" />
+                            <span className="text-white/30 text-xs">veya</span>
+                            <div className="flex-1 h-px bg-white/10" />
+                        </div>
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="space-y-3">
+                            {error && (
+                                <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+                                    {error}
+                                </div>
+                            )}
+
+                            {/* Name fields in row */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs text-white/60 mb-1.5">Ad</label>
+                                    <div className="relative">
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                        <input
+                                            type="text"
+                                            value={formData.firstName}
+                                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                            placeholder="Adınız"
+                                            className="w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-white/60 mb-1.5">Soyad</label>
+                                    <input
+                                        type="text"
+                                        value={formData.lastName}
+                                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                        placeholder="Soyadınız"
+                                        className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label className="block text-xs text-white/60 mb-1.5">E-posta</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        placeholder="ornek@email.com"
+                                        required
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Password */}
+                            <div>
+                                <label className="block text-xs text-white/60 mb-1.5">Şifre</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        placeholder="••••••••"
+                                        required
+                                        className="w-full pl-10 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+
+                                {/* Password requirements - inline */}
+                                {formData.password && (
+                                    <div className="mt-2 flex flex-wrap gap-3">
+                                        <PasswordCheck checked={passwordChecks.length} text="6+ karakter" />
+                                        <PasswordCheck checked={passwordChecks.hasLetter} text="Harf" />
+                                        <PasswordCheck checked={passwordChecks.hasNumber} text="Rakam" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Submit */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-medium text-sm rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        Kayıt Ol
+                                        <ArrowRight className="w-4 h-4" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Login link + Terms */}
+                        <div className="mt-4 text-center">
+                            <p className="text-white/50 text-sm">
+                                Zaten hesabınız var mı?{' '}
+                                <Link href="/login" className="text-white hover:text-indigo-400 transition-colors font-medium">
+                                    Giriş yapın
+                                </Link>
+                            </p>
+                            <p className="mt-3 text-[10px] text-white/30">
+                                Kayıt olarak{' '}
+                                <Link href="/terms" className="underline">Kullanım Koşulları</Link>
+                                {' '}ve{' '}
+                                <Link href="/privacy" className="underline">Gizlilik Politikası</Link>
+                                &apos;nı kabul edersiniz.
+                            </p>
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Right side - Image */}
+                <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+                    <Image
+                        src="/auth-bg.png"
+                        alt="Register background"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/50" />
+
+                    {/* Logo on image */}
+                    <div className="absolute top-8 right-8">
                         <Link
                             href="/"
                             className="text-2xl font-bold text-white"
@@ -87,180 +279,9 @@ export default function RegisterPage() {
                             yaver
                         </Link>
                     </div>
-
-                    {/* Header */}
-                    <div className="mb-4">
-                        <h1 className="text-2xl font-bold text-white mb-1">
-                            Hesap oluşturun
-                        </h1>
-                        <p className="text-white/50 text-sm">
-                            Hemen ücretsiz başlayın
-                        </p>
-                    </div>
-
-                    {/* Google Signup */}
-                    <button
-                        onClick={handleGoogleSignup}
-                        className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm hover:bg-white/10 transition-colors mb-4"
-                    >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                        </svg>
-                        Google ile kayıt ol
-                    </button>
-
-                    {/* Divider */}
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="flex-1 h-px bg-white/10" />
-                        <span className="text-white/30 text-xs">veya</span>
-                        <div className="flex-1 h-px bg-white/10" />
-                    </div>
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-3">
-                        {error && (
-                            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
-                                {error}
-                            </div>
-                        )}
-
-                        {/* Name fields in row */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-xs text-white/60 mb-1.5">Ad</label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                    <input
-                                        type="text"
-                                        value={formData.firstName}
-                                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                        placeholder="Adınız"
-                                        className="w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs text-white/60 mb-1.5">Soyad</label>
-                                <input
-                                    type="text"
-                                    value={formData.lastName}
-                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                    placeholder="Soyadınız"
-                                    className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Email */}
-                        <div>
-                            <label className="block text-xs text-white/60 mb-1.5">E-posta</label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    placeholder="ornek@email.com"
-                                    required
-                                    className="w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password */}
-                        <div>
-                            <label className="block text-xs text-white/60 mb-1.5">Şifre</label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    placeholder="••••••••"
-                                    required
-                                    className="w-full pl-10 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/50 transition-all"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
-                                >
-                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
-                            </div>
-
-                            {/* Password requirements - inline */}
-                            {formData.password && (
-                                <div className="mt-2 flex flex-wrap gap-3">
-                                    <PasswordCheck checked={passwordChecks.length} text="6+ karakter" />
-                                    <PasswordCheck checked={passwordChecks.hasLetter} text="Harf" />
-                                    <PasswordCheck checked={passwordChecks.hasNumber} text="Rakam" />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-medium text-sm rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <>
-                                    Kayıt Ol
-                                    <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Login link + Terms */}
-                    <div className="mt-4 text-center">
-                        <p className="text-white/50 text-sm">
-                            Zaten hesabınız var mı?{' '}
-                            <Link href="/login" className="text-white hover:text-indigo-400 transition-colors font-medium">
-                                Giriş yapın
-                            </Link>
-                        </p>
-                        <p className="mt-3 text-[10px] text-white/30">
-                            Kayıt olarak{' '}
-                            <Link href="/terms" className="underline">Kullanım Koşulları</Link>
-                            {' '}ve{' '}
-                            <Link href="/privacy" className="underline">Gizlilik Politikası</Link>
-                            &apos;nı kabul edersiniz.
-                        </p>
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Right side - Image */}
-            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-                <Image
-                    src="/auth-bg.png"
-                    alt="Register background"
-                    fill
-                    className="object-cover"
-                    priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/50" />
-
-                {/* Logo on image */}
-                <div className="absolute top-8 right-8">
-                    <Link
-                        href="/"
-                        className="text-2xl font-bold text-white"
-                        style={{ fontFamily: 'var(--font-space), system-ui, sans-serif' }}
-                    >
-                        yaver
-                    </Link>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 
@@ -276,3 +297,4 @@ function PasswordCheck({ checked, text }: { checked: boolean; text: string }) {
         </div>
     );
 }
+
