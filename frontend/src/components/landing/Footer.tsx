@@ -21,7 +21,7 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="relative bg-[#050508] overflow-hidden">
+        <footer className="relative overflow-hidden">
             {/* Background glow effect */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[500px] pointer-events-none">
                 <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-blue-600/30 rounded-full blur-[150px]" />

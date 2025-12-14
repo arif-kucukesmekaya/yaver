@@ -1,69 +1,54 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Rocket } from 'lucide-react';
+import { useRef } from 'react';
 
 export function CTA() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start end", "end start"]
+    });
+
+    const starScale = useTransform(scrollYProgress, [0, 1], [0.5, 1.5]);
+    const starOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
+
     return (
-        <section className="py-32 bg-black relative overflow-hidden">
-            {/* Background glow */}
-            <div className="absolute inset-0">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/20 rounded-full blur-[150px]" />
-            </div>
-
-            <div className="max-w-4xl mx-auto px-6 relative z-10">
+        <section ref={containerRef} className="py-40 relative overflow-hidden flex items-center justify-center min-h-[80vh]">
+            <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 backdrop-blur-md text-white mb-8"
                 >
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8">
-                        <Sparkles className="w-4 h-4 text-indigo-400" />
-                        <span className="text-sm text-white/80">Hemen başlayın</span>
-                    </div>
-
-                    {/* Headline */}
-                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-                        İçerik Üretiminde
-                        <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-                            Yeni Nesil
-                        </span>
-                    </h2>
-
-                    {/* Description */}
-                    <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-10">
-                        Binlerce e-ticaret satıcısı YAVER ile zamandan tasarruf ediyor ve satışlarını artırıyor.
-                        Siz de ücretsiz deneyin.
-                    </p>
-
-                    {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link href="/register" className="group relative">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-all duration-500" />
-                            <div className="relative flex items-center gap-2 px-8 py-4 bg-white text-black font-semibold rounded-full transition-transform duration-300 group-hover:scale-[1.02]">
-                                Ücretsiz Başla
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </div>
-                        </Link>
-
-                        <Link
-                            href="#pricing"
-                            className="flex items-center gap-2 px-8 py-4 text-white/70 hover:text-white transition-colors"
-                        >
-                            Fiyatları İncele
-                        </Link>
-                    </div>
-
-                    {/* Trust badges */}
-                    <p className="text-white/40 text-sm mt-10">
-                        ✓ Kredi kartı gerektirmez &nbsp; ✓ 10 ücretsiz kredi &nbsp; ✓ Hemen kullanmaya başlayın
-                    </p>
+                    <Rocket className="w-5 h-5 text-indigo-400" />
+                    <span className="font-medium">Satışlarınızı Ateşleyin</span>
                 </motion.div>
+
+                <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight">
+                    E-ticaretin Geleceği <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+                        Sizi Bekliyor
+                    </span>
+                </h2>
+
+                <p className="text-xl text-white/50 max-w-2xl mx-auto mb-12">
+                    Binlerce satıcı arasına katılın. Kart bilgisi gerekmeden 10 AI kredisini ücretsiz kullanın.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <Link href="/register" className="group relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-white to-pink-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500 animate-tilt"></div>
+                        <div className="relative flex items-center gap-3 px-8 py-5 bg-white text-black rounded-full font-bold text-lg transition-transform hover:scale-[1.02] active:scale-[0.98]">
+                            <Sparkles className="w-5 h-5 fill-indigo-500 stroke-indigo-500" />
+                            Hemen Başla
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Link>
+                </div>
             </div>
         </section>
     );

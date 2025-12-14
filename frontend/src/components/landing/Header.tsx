@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight, Sparkles } from 'lucide-react';
 
 const navLinks = [
     { href: '#features', label: 'Özellikler' },
@@ -37,18 +37,17 @@ export function Header() {
     return (
         <>
             {/* Header */}
-            <header className="fixed top-0 left-0 right-0 z-50 p-4">
+            <header className="fixed top-6 left-0 right-0 z-50 px-6 pointer-events-none">
                 <motion.nav
-                    initial={{ y: -20, opacity: 0 }}
+                    initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                     className={cn(
-                        'mx-auto flex items-center justify-between px-6 py-4 rounded-2xl backdrop-blur-2xl',
-                        'transition-all duration-1000 ease-out',
-                        'shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]',
+                        'mx-auto flex items-center justify-between px-6 py-3 rounded-full backdrop-blur-md pointer-events-auto',
+                        'transition-all duration-500 ease-out border shadow-lg',
                         isScrolled
-                            ? 'max-w-xs bg-white/[0.08] border border-white/[0.15]'
-                            : 'max-w-6xl bg-white/[0.04] border border-white/[0.1]'
+                            ? 'max-w-xl bg-black/60 border-white/10 shadow-black/20'
+                            : 'max-w-5xl bg-black/30 border-white/5'
                     )}
                 >
                     {/* Logo */}
@@ -83,21 +82,12 @@ export function Header() {
                             'relative hidden md:block transition-all duration-500 group',
                             isScrolled ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
                         )}>
-                            {/* Rotating conic gradient border */}
-                            <div
-                                className="absolute -inset-[1px] rounded-full animate-border-spin"
-                                style={{
-                                    background: 'conic-gradient(from var(--border-angle, 0deg), #3b82f6, #8b5cf6, #ec4899, #8b5cf6, #3b82f6)',
-                                    padding: '1px'
-                                }}
-                            />
-
-                            <Link
-                                href="/register"
-                                className="relative flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium text-white bg-[#0a0a0a] rounded-full hover:bg-black/80 transition-colors z-10"
-                            >
-                                Başla
-                                <ArrowUpRight className="w-3.5 h-3.5" />
+                            <Link href="/register" className="group relative">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                                <button className="relative flex items-center gap-2 px-6 py-2.5 bg-black rounded-full leading-none text-white text-sm font-medium border border-white/10 backdrop-blur-xl transition-transform active:scale-95">
+                                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                                    <span>Başla</span>
+                                </button>
                             </Link>
                         </div>
 
@@ -168,23 +158,13 @@ export function Header() {
                                 transition={{ delay: 0.35 }}
                                 className="mt-8"
                             >
-                                {/* CTA with rotating border */}
-                                <div className="relative inline-block group">
-                                    <div
-                                        className="absolute -inset-[1px] rounded-full animate-border-spin"
-                                        style={{
-                                            background: 'conic-gradient(from var(--border-angle, 0deg), #3b82f6, #8b5cf6, #ec4899, #8b5cf6, #3b82f6)',
-                                        }}
-                                    />
-                                    <Link
-                                        href="/register"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="relative inline-flex items-center gap-2 px-8 py-4 text-lg font-medium text-white bg-black rounded-full hover:bg-black/80 transition-colors"
-                                    >
-                                        Ücretsiz Başla
-                                        <ArrowUpRight className="w-5 h-5" />
-                                    </Link>
-                                </div>
+                                <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="group relative block w-fit mx-auto">
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                                    <button className="relative flex items-center gap-2 px-8 py-4 bg-black rounded-full leading-none text-white text-lg font-medium border border-white/10 backdrop-blur-xl transition-transform active:scale-95">
+                                        <Sparkles className="w-5 h-5 text-indigo-400" />
+                                        <span>Başla</span>
+                                    </button>
+                                </Link>
                             </motion.div>
                         </div>
 

@@ -1,211 +1,208 @@
 'use client';
 
-import { motion, useScroll, useTransform, MotionValue } from 'framer-motion';
-import { Package, Store, Sparkles, Send, Check } from 'lucide-react';
-import { useRef } from 'react';
+import React from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Zap, Share2, Box, Layers, Globe, Store, Sparkles } from "lucide-react";
+import { TracingBeam } from "@/components/ui/tracing-beam";
+
+// ===============================================
+// HOW IT WORKS - CONTENT
+// ===============================================
 
 const steps = [
     {
-        title: 'Ürün Ekle',
-        desc: 'Ürün bilgilerinizi sisteme girin veya toplu yükleyin.',
-        icon: Package,
-        color: '#3b82f6',
+        id: "integrations",
+        title: "Entegrasyon",
+        desc: "Tek satır kodla tüm pazaryerlerine bağlanın.",
+        icon: Share2,
+        accent: "text-blue-400",
+        shadow: "shadow-blue-500/20",
+        MockComponent: MockIntegrationUI
     },
     {
-        title: 'Pazaryeri Seç',
-        desc: 'Trendyol, Hepsiburada, Amazon seçin.',
-        icon: Store,
-        color: '#8b5cf6',
+        id: "orchestration",
+        title: "Orkestrasyon",
+        desc: "Stok ve fiyat politikalarını tek merkezden yönetin.",
+        icon: Layers,
+        accent: "text-purple-400",
+        shadow: "shadow-purple-500/20",
+        MockComponent: MockOrchestrationUI
     },
     {
-        title: 'AI Üretimi',
-        desc: 'Yapay zeka SEO-uyumlu içerik oluşturur.',
-        icon: Sparkles,
-        color: '#ec4899',
+        id: "generation",
+        title: "AI Üretimi",
+        desc: "Her ürün için SEO uyumlu açıklamalar oluşturun.",
+        icon: Box,
+        accent: "text-amber-400",
+        shadow: "shadow-amber-500/20",
+        MockComponent: MockGenerationUI
     },
     {
-        title: 'Yayınla',
-        desc: 'Tek tıkla pazaryerlerine gönderin.',
-        icon: Send,
-        color: '#10b981',
+        id: "global",
+        title: "Global Satış",
+        desc: "Sınırları kaldırın, dünyaya açılın.",
+        icon: Globe,
+        accent: "text-emerald-400",
+        shadow: "shadow-emerald-500/20",
+        MockComponent: MockGlobalUI
     },
 ];
 
 export function HowItWorks() {
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end end"]
-    });
-
-    // Pipeline progress
-    const pipelineProgress = useTransform(scrollYProgress, [0.2, 0.85], [0, 1]);
-
-    // Step activation thresholds - first step starts at 0.2, not 0
-    const stepThresholds = [0.2, 0.4, 0.6, 0.8];
-
     return (
-        <div ref={containerRef} className="relative h-[300vh]">
-            <div className="sticky top-0 min-h-screen flex items-center justify-center">
-                <section id="how-it-works" className="w-full">
-                    <div className="max-w-5xl mx-auto px-6">
+        <section className="relative py-24 w-full" id="how-it-works">
+            <div className="text-center mb-16 max-w-3xl mx-auto px-6 relative z-10">
 
-                        {/* Header - Sadece başlık */}
-                        <div className="text-center mb-16">
-                            <motion.h2
-                                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight"
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                            >
-                                <span className="text-white">Nasıl </span>
-                                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                    Çalışır?
-                                </span>
-                            </motion.h2>
 
-                            <motion.p
-                                className="text-lg text-white/40 mt-4"
-                                initial={{ opacity: 0 }}
-                                whileInView={{ opacity: 1 }}
-                                viewport={{ once: true }}
-                            >
-                                4 adımda profesyonel içerik üretin
-                            </motion.p>
-                        </div>
+                <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">
+                    Sistem <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-white to-indigo-400 animate-gradient-x">Nasıl Çalışır?</span>
+                </h2>
+            </div>
 
-                        {/* Pipeline & Steps - Tam ortada */}
-                        <div className="relative py-8">
+            {/* Reduced width to max-w-3xl to bring content closer to center */}
+            <TracingBeam className="px-6 max-w-3xl">
+                <div className="relative mx-auto pt-4 antialiased">
+                    {steps.map((step, index) => (
+                        <div key={`content-${index}`} className="mb-24 relative flex flex-col items-center text-center md:items-start md:text-left">
 
-                            {/* Pipeline Track */}
-                            <div className="hidden md:block absolute top-[6rem] left-[10%] right-[10%] h-1 rounded-full bg-white/5" />
+                            {/* Visual Badge - Now auto-centered on mobile via flex-col items-center, left on desktop */}
+                            <h2 className={cn("bg-black text-white rounded-full text-sm w-fit px-4 py-1 mb-4 flex items-center gap-2 border border-white/10", step.shadow)}>
+                                <step.icon className={cn("w-4 h-4", step.accent)} />
+                                {step.title}
+                            </h2>
 
-                            {/* Animated Pipeline */}
-                            <motion.div
-                                className="hidden md:block absolute top-[6rem] left-[10%] h-1 rounded-full origin-left overflow-hidden"
-                                style={{
-                                    scaleX: pipelineProgress,
-                                    width: '80%',
-                                }}
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 via-pink-500 to-emerald-500" />
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 via-pink-500 to-emerald-500 blur-md opacity-50" />
+                            {/* Increased max-width to match card */}
+                            <p className={cn("text-xl mb-8 text-white/70 max-w-2xl")}>
+                                {step.desc}
+                            </p>
 
-                                {/* Shimmer */}
-                                <motion.div
-                                    className="absolute inset-0 w-16 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                                    animate={{ x: ['-100%', '600%'] }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                                />
-                            </motion.div>
-
-                            {/* Laser Head */}
-                            <motion.div
-                                className="hidden md:block absolute top-[6rem]"
-                                style={{
-                                    left: useTransform(pipelineProgress, v => `calc(10% + ${v * 80}%)`),
-                                    opacity: useTransform(scrollYProgress, [0.15, 0.25], [0, 1])
-                                }}
-                            >
-                                <div className="relative -translate-x-1/2 -translate-y-[calc(50%-2px)]">
-                                    <div className="w-4 h-4 rounded-full bg-white shadow-[0_0_20px_8px_rgba(255,255,255,0.4)]" />
-                                </div>
-                            </motion.div>
-
-                            {/* Steps Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                {steps.map((step, idx) => (
-                                    <StepItem
-                                        key={idx}
-                                        step={step}
-                                        index={idx}
-                                        scrollProgress={scrollYProgress}
-                                        threshold={stepThresholds[idx]}
-                                    />
-                                ))}
+                            {/* Mock UI Container - Floating & Glassy */}
+                            <div className="relative w-full max-w-2xl rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm p-4 h-[300px] overflow-hidden shadow-2xl group hover:border-white/20 transition-all duration-500 mx-auto md:mx-0">
+                                <step.MockComponent accent={step.accent} />
                             </div>
                         </div>
-                    </div>
-                </section>
+                    ))}
+                </div>
+            </TracingBeam>
+        </section>
+    );
+}
+
+// ==================================
+// High-Fidelity Mock UIs
+// ==================================
+
+function MockIntegrationUI({ accent }: { accent: string }) {
+    return (
+        <div className="w-full h-full flex flex-col gap-3">
+            {/* Fake Code Editor */}
+            <div className="flex-1 bg-black/50 rounded-xl border border-white/10 p-4 font-mono text-[10px] text-white/40 leading-relaxed overflow-hidden">
+                <div className="flex gap-1.5 mb-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/20" />
+                </div>
+                <p><span className="text-purple-400">const</span> <span className="text-blue-400">products</span> = <span className="text-purple-400">await</span> xml.<span className="text-yellow-400">parse</span>(feed);</p>
+                <p><span className="text-purple-400">const</span> <span className="text-blue-400">analysis</span> = <span className="text-purple-400">await</span> ai.<span className="text-yellow-400">scan</span>(products);</p>
+                <p className="mt-2"><span className="text-gray-500">// Auto-detected 1,240 items</span></p>
+                <p><span className="text-green-400">return</span> analysis.optimized;</p>
+            </div>
+
+            {/* Status Bar */}
+            <div className="h-10 bg-white/5 rounded-lg border border-white/5 flex items-center justify-between px-3">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs text-emerald-400 font-medium">Sync Active</span>
+                </div>
+                <div className="text-[10px] text-white/30">Latency: 24ms</div>
             </div>
         </div>
     );
 }
 
-function StepItem({ step, index, scrollProgress, threshold }: {
-    step: typeof steps[0];
-    index: number;
-    scrollProgress: MotionValue<number>;
-    threshold: number;
-}) {
-    const Icon = step.icon;
-
-    // Step becomes active only after reaching its threshold
-    const isActive = useTransform(scrollProgress, v => v >= threshold);
-
+function MockOrchestrationUI({ accent }: { accent: string }) {
     return (
-        <motion.div
-            className="flex flex-col items-center text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-        >
-            {/* Circle */}
-            <div className="relative mb-6">
-                {/* Glow */}
-                <motion.div
-                    className="absolute -inset-4 rounded-full blur-2xl transition-opacity duration-500"
-                    style={{
-                        backgroundColor: step.color,
-                        opacity: useTransform(isActive, v => v ? 0.35 : 0)
-                    }}
-                />
+        <div className="w-full grid grid-cols-2 gap-3">
+            {['Trendyol', 'Amazon', 'Hepsiburada', 'Etsy'].map((mp, i) => (
+                <div key={mp} className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-between group hover:bg-white/10 transition-colors">
+                    <div className="flex justify-between items-start">
+                        <Store className={cn("w-4 h-4", accent)} />
+                        <div className={cn("w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-green-400 transition-colors")} />
+                    </div>
+                    <div>
+                        <div className="text-xs text-white mb-0.5">{mp}</div>
+                        <div className="text-[10px] text-white/40">Connected</div>
+                    </div>
+                </div>
+            ))}
 
-                {/* Main Circle */}
-                <motion.div
-                    className="relative w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center transition-all duration-500"
-                    style={{
-                        backgroundColor: useTransform(isActive, v => v ? step.color : 'transparent'),
-                        borderWidth: 3,
-                        borderColor: step.color,
-                        boxShadow: useTransform(isActive, v =>
-                            v ? `0 8px 40px ${step.color}50` : 'none'
-                        )
-                    }}
-                >
-                    <motion.div
-                        style={{ color: useTransform(isActive, v => v ? '#ffffff' : step.color) }}
-                    >
-                        <Icon className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
-                    </motion.div>
-                </motion.div>
+            {/* Connecting Lines Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-16 h-16 rounded-full border border-white/10 bg-black/80 backdrop-blur flex items-center justify-center shadow-xl">
+                    <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+                </div>
+            </div>
+        </div>
+    );
+}
 
-                {/* Checkmark */}
-                <motion.div
-                    className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30"
-                    style={{
-                        scale: useTransform(isActive, v => v ? 1 : 0),
-                        opacity: useTransform(isActive, v => v ? 1 : 0)
-                    }}
-                >
-                    <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                </motion.div>
+function MockGenerationUI({ accent }: { accent: string }) {
+    return (
+        <div className="relative w-full h-full flex items-center justify-center">
+            {/* Brain/AI Visualization */}
+            <div className="absolute inset-0 bg-gradient-to-t from-fuchsia-500/10 via-transparent to-transparent" />
+
+            <div className="relative z-10 w-full space-y-3">
+                <div className="flex items-center gap-3 mb-4">
+                    <Sparkles className="w-6 h-6 text-fuchsia-400" />
+                    <div className="text-xs font-medium text-white/80">Yaver AI Processing</div>
+                </div>
+
+                <div className="space-y-2">
+                    {[1, 2, 3].map((_, i) => (
+                        <div key={i} className="h-8 bg-white/5 rounded-lg border border-white/5 flex items-center px-3 gap-3 overflow-hidden">
+                            <div className="w-1 h-4 bg-fuchsia-500/50 rounded-full" />
+                            <div className={cn("flex-1 h-1.5 rounded-full bg-white/10 relative overflow-hidden")}>
+                                <motion.div
+                                    className="absolute inset-y-0 left-0 bg-fuchsia-500"
+                                    initial={{ width: '0%' }}
+                                    whileInView={{ width: '100%' }}
+                                    transition={{ duration: 1.5, delay: i * 0.4, repeat: Infinity, repeatDelay: 2 }}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function MockGlobalUI({ accent }: { accent: string }) {
+    return (
+        <div className="w-full h-full relative">
+            {/* Map Grid */}
+            <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 gap-1 opacity-20">
+                {Array.from({ length: 24 }).map((_, i) => (
+                    <div key={i} className="border border-white/20 rounded-sm" />
+                ))}
             </div>
 
-            {/* Content */}
-            <motion.div
-                style={{ opacity: useTransform(isActive, v => v ? 1 : 0.4) }}
-                className="transition-opacity duration-500"
-            >
-                <h3 className="text-xl font-bold text-white mb-2">
-                    {step.title}
-                </h3>
-                <p className="text-sm text-white/50 max-w-[180px]">
-                    {step.desc}
-                </p>
-            </motion.div>
-        </motion.div>
+            <div className="relative z-10 flex flex-col items-center justify-center h-full gap-4">
+                <div className="relative">
+                    <div className="absolute -inset-4 bg-emerald-500/20 blur-xl rounded-full animate-pulse" />
+                    <Globe className="w-16 h-16 text-emerald-400 relative z-10" strokeWidth={1} />
+                </div>
+
+                <div className="flex gap-2">
+                    <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400">TR</span>
+                    <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400">US</span>
+                    <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400">EU</span>
+                </div>
+
+                <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+            </div>
+        </div>
     );
 }
