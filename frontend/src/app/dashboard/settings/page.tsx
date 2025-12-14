@@ -17,6 +17,8 @@ import {
     Eye,
     EyeOff,
 } from 'lucide-react';
+import { useToast } from '@/hooks/useToast';
+import { Toast } from '@/components/ui/Notifications';
 
 const tabs = [
     { id: 'profile', label: 'Profil', icon: User },
@@ -30,6 +32,7 @@ export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState('profile');
     const [isSaving, setIsSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const { toast, success, error, hideToast } = useToast();
 
     const [profileData, setProfileData] = useState({ firstName: '', lastName: '', phoneNumber: '', companyName: '' });
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -46,23 +49,30 @@ export default function SettingsPage() {
             await new Promise(resolve => setTimeout(resolve, 1000));
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
+            success('Kaydedildi', 'Profil bilgileri güncellendi');
         } catch {
-            alert('Kaydetme başarısız oldu');
+            error('Hata', 'Kaydetme başarısız oldu');
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleChangePassword = async () => {
-        if (passwordData.newPassword !== passwordData.confirmPassword) { alert('Şifreler eşleşmiyor'); return; }
-        if (passwordData.newPassword.length < 6) { alert('Şifre en az 6 karakter olmalı'); return; }
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            error('Hata', 'Şifreler eşleşmiyor');
+            return;
+        }
+        if (passwordData.newPassword.length < 6) {
+            error('Hata', 'Şifre en az 6 karakter olmalı');
+            return;
+        }
         setIsSaving(true);
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            alert('Şifre başarıyla değiştirildi');
+            success('Başarılı', 'Şifre başarıyla değiştirildi');
         } catch {
-            alert('Şifre değiştirme başarısız oldu');
+            error('Hata', 'Şifre değiştirme başarısız oldu');
         } finally {
             setIsSaving(false);
         }
@@ -160,6 +170,13 @@ export default function SettingsPage() {
                     </motion.div>
                 )}
             </div>
+            <Toast
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                isVisible={toast.isVisible}
+                onClose={hideToast}
+            />
         </div>
     );
 }

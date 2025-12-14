@@ -22,6 +22,8 @@ import {
     RefreshCcw,
 } from 'lucide-react';
 import type { ProductStatus, ListingStatus, MarketplaceListing } from '@/types';
+import { useToast } from '@/hooks/useToast';
+import { Toast } from '@/components/ui/Notifications';
 
 const productStatusConfig: Record<ProductStatus, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
     draft: { label: 'Taslak', color: 'text-yellow-400', bgColor: 'bg-yellow-500/10 border-yellow-500/20', icon: Clock },
@@ -42,6 +44,7 @@ export default function ProductDetailPage() {
     const productId = params.id ? parseInt(params.id as string) : null;
     const { product, isLoading, error, refetch } = useProduct(productId);
     const { refetch: refetchCredits } = useCredits();
+    const { toast, success, error: toastError, hideToast } = useToast();
     const [isDeleting, setIsDeleting] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
 
@@ -75,9 +78,10 @@ export default function ProductDetailPage() {
         setIsDeleting(true);
         try {
             await productsApi.delete(product.id);
-            router.push('/dashboard/products');
+            success('Ürün silindi', 'Ürün başarıyla silindi, yönlendiriliyorsunuz...');
+            setTimeout(() => router.push('/dashboard/products'), 1500);
         } catch {
-            alert('Silme işlemi başarısız oldu');
+            toastError('Hata', 'Silme işlemi başarısız oldu');
         } finally {
             setIsDeleting(false);
         }
@@ -85,7 +89,7 @@ export default function ProductDetailPage() {
 
     const handleRegenerate = async () => {
         if (!product.marketplaceSelections?.length) {
-            alert('Pazaryeri seçilmemiş');
+            toastError('Hata', 'Pazaryeri seçilmemiş');
             return;
         }
         const marketplaceIds = product.marketplaceSelections.map(s => s.marketplaceId);
@@ -93,9 +97,10 @@ export default function ProductDetailPage() {
         try {
             await aiApi.generateContent(product.id, marketplaceIds);
             refetchCredits();
-            refetch();
+            await refetch();
+            success('Başarılı', 'İçerik yeniden üretildi');
         } catch {
-            alert('Yeniden üretim başarısız oldu');
+            toastError('Hata', 'Yeniden üretim başarısız oldu');
         } finally {
             setIsRegenerating(false);
         }
@@ -183,6 +188,13 @@ export default function ProductDetailPage() {
                     </div>
                 </div>
             </div>
+            <Toast
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                isVisible={toast.isVisible}
+                onClose={hideToast}
+            />
         </div>
     );
 }

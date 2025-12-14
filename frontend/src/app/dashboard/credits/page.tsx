@@ -15,6 +15,8 @@ import {
     ArrowDownRight,
 } from 'lucide-react';
 import type { TransactionType } from '@/types';
+import { useToast } from '@/hooks/useToast';
+import { Toast } from '@/components/ui/Notifications';
 
 const creditPackages = [
     { amount: 10, price: 29, popular: false },
@@ -35,6 +37,7 @@ export default function CreditsPage() {
     const { transactions, isLoading: historyLoading } = useCreditHistory(20);
     const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
     const [isPurchasing, setIsPurchasing] = useState(false);
+    const { toast, success, error, hideToast } = useToast();
 
     const handlePurchase = async (amount: number) => {
         if (isPurchasing) return;
@@ -42,9 +45,9 @@ export default function CreditsPage() {
         setSelectedPackage(amount);
         try {
             await purchaseCredits(amount);
-            alert(`${amount} kredi başarıyla eklendi!`);
+            success('Başarılı', `${amount} kredi başarıyla eklendi!`);
         } catch {
-            alert('Satın alma başarısız oldu');
+            error('Hata', 'Satın alma başarısız oldu');
         } finally {
             setIsPurchasing(false);
             setSelectedPackage(null);
@@ -153,6 +156,13 @@ export default function CreditsPage() {
                     )}
                 </div>
             </div>
+            <Toast
+                type={toast.type}
+                title={toast.title}
+                message={toast.message}
+                isVisible={toast.isVisible}
+                onClose={hideToast}
+            />
         </div>
     );
 }
