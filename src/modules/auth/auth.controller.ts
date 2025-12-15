@@ -46,8 +46,8 @@ export class AuthController {
    * Login with Google OAuth
    */
   static async googleLogin(c: any) {
-    const { credential } = c.req.valid('json') as GoogleLoginInput;
-    const result = await AuthService.loginWithGoogle(credential);
+    const { email, firstName, lastName } = c.req.valid('json') as GoogleLoginInput;
+    const result = await AuthService.loginWithGoogle({ email, firstName, lastName });
 
     return c.json({
       success: true,

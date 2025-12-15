@@ -159,28 +159,10 @@ export class AuthService {
 
   /**
    * Login or register with Google OAuth
+   * Uses email and name from frontend (useGoogleLogin flow)
    */
-  static async loginWithGoogle(credential: string) {
-    const { OAuth2Client } = await import('google-auth-library');
-    const client = new OAuth2Client(process.env['GOOGLE_CLIENT_ID']);
-
-    // Verify the Google token
-    let ticket;
-    try {
-      ticket = await client.verifyIdToken({
-        idToken: credential,
-        audience: process.env['GOOGLE_CLIENT_ID'],
-      });
-    } catch {
-      throw new AuthenticationError('Invalid Google token');
-    }
-
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email) {
-      throw new AuthenticationError('Could not get user info from Google');
-    }
-
-    const { email, given_name: firstName, family_name: lastName } = payload;
+  static async loginWithGoogle(input: { email: string; firstName?: string; lastName?: string }) {
+    const { email, firstName, lastName } = input;
 
     // Check if user exists
     let user = await db.query.users.findFirst({

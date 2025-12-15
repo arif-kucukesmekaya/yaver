@@ -27,6 +27,9 @@ export const resetPasswordSchema = z.object({
 
 export const googleLoginSchema = z.object({
   credential: z.string().min(1, 'Google credential is required'),
+  email: z.string().email('Invalid email format'),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
