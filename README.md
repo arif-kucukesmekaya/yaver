@@ -217,17 +217,3 @@ bun run typecheck
 # Lint
 bun run lint
 ```
-
----
-
-## 📝 Lisans
-
-MIT License - Özgürce kullanabilirsiniz.
-
----
-
-## 👨‍💻 Geliştirici
-
-**Arif Küçükesmekaya**
-
-- GitHub: [@arif-kucukesmekaya](https://github.com/arif-kucukesmekaya)
