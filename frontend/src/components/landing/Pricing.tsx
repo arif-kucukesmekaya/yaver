@@ -28,7 +28,7 @@ const plans = [
     {
         name: 'Pro',
         description: 'Aktif satıcılar için',
-        price: '299',
+        price: '4999',
         period: '/ay',
         credits: '100 Kredi/Ay',
         icon: Zap,
