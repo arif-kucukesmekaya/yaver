@@ -6,7 +6,8 @@ import {
     loginSchema,
     refreshTokenSchema,
     forgotPasswordSchema,
-    resetPasswordSchema
+    resetPasswordSchema,
+    googleLoginSchema
 } from './auth.schema';
 import { authMiddleware } from '../../core/middleware/auth';
 
@@ -17,6 +18,9 @@ authRoutes.post('/register', zValidator('json', registerSchema), AuthController.
 
 // POST /auth/login
 authRoutes.post('/login', zValidator('json', loginSchema), AuthController.login);
+
+// POST /auth/google - Google OAuth login
+authRoutes.post('/google', zValidator('json', googleLoginSchema), AuthController.googleLogin);
 
 // POST /auth/refresh - Refresh access token
 authRoutes.post('/refresh', zValidator('json', refreshTokenSchema), AuthController.refreshToken);

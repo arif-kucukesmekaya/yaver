@@ -158,6 +158,127 @@ export class AuthService {
   }
 
   /**
+   * Login or register with Google OAuth
+   */
+  static async loginWithGoogle(credential: string) {
+    const { OAuth2Client } = await import('google-auth-library');
+    const client = new OAuth2Client(process.env['GOOGLE_CLIENT_ID']);
+
+    // Verify the Google token
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env['GOOGLE_CLIENT_ID'],
+      });
+    } catch {
+      throw new AuthenticationError('Invalid Google token');
+    }
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new AuthenticationError('Could not get user info from Google');
+    }
+
+    const { email, given_name: firstName, family_name: lastName } = payload;
+
+    // Check if user exists
+    let user = await db.query.users.findFirst({
+      where: eq(users.email, email),
+      with: {
+        profile: true,
+        credits: true,
+      },
+    });
+
+    // If user doesn't exist, create one (auto-registration)
+    if (!user) {
+      // Generate a random password hash (user won't use it since they're using Google)
+      const randomPassword = crypto.randomUUID();
+      const passwordHash = await hashPassword(randomPassword);
+
+      // Create user
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          email,
+          passwordHash,
+        })
+        .returning();
+
+      if (!newUser) {
+        throw new Error('Failed to create user');
+      }
+
+      // Create user profile
+      await db.insert(userProfiles).values({
+        userId: newUser.id,
+        firstName: firstName || null,
+        lastName: lastName || null,
+      });
+
+      // Initialize user credits (Free plan: 10 credits)
+      await db.insert(userCredits).values({
+        userId: newUser.id,
+        availableCredits: 10,
+        totalEarned: 10,
+        totalSpent: 0,
+      });
+
+      // Assign default role (Satıcı)
+      const sellerRole = await db.query.roles.findFirst({
+        where: eq(roles.roleName, 'Satıcı'),
+      });
+
+      if (sellerRole) {
+        await db.insert(userRoles).values({
+          userId: newUser.id,
+          roleId: sellerRole.id,
+        });
+      }
+
+      // Fetch the complete user with relations
+      user = await db.query.users.findFirst({
+        where: eq(users.id, newUser.id),
+        with: {
+          profile: true,
+          credits: true,
+        },
+      });
+    }
+
+    if (!user) {
+      throw new Error('Failed to get user');
+    }
+
+    // Generate access token
+    const accessToken = generateToken({
+      userId: user.id,
+      email: user.email,
+    });
+
+    // Generate refresh token
+    const { token: refreshToken, expiresAt } = generateRefreshToken(user.id);
+    await db.insert(refreshTokens).values({
+      userId: user.id,
+      token: refreshToken,
+      expiresAt,
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.profile?.firstName,
+        lastName: user.profile?.lastName,
+        credits: user.credits?.availableCredits || 0,
+      },
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  /**
    * Refresh access token using refresh token
    */
   static async refreshAccessToken(refreshToken: string) {

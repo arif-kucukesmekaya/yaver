@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, Check, Info, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, Check } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -16,7 +18,6 @@ export default function RegisterPage() {
         lastName: '',
     });
     const [error, setError] = useState('');
-    const [googleMessage, setGoogleMessage] = useState(false);
 
     // Password validation
     const passwordChecks = {
@@ -63,31 +64,42 @@ export default function RegisterPage() {
         }
     };
 
-    const handleGoogleSignup = () => {
-        setGoogleMessage(true);
-        setTimeout(() => setGoogleMessage(false), 4000);
+    const handleGoogleSuccess = async (credentialResponse: any) => {
+        setIsGoogleLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('http://localhost:8881/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: credentialResponse.credential }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Google ile kayıt başarısız');
+            }
+
+            // Store tokens
+            localStorage.setItem('accessToken', data.data.accessToken);
+            localStorage.setItem('refreshToken', data.data.refreshToken);
+
+            // Redirect to dashboard
+            window.location.href = '/dashboard';
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Google ile kayıt başarısız');
+        } finally {
+            setIsGoogleLoading(false);
+        }
+    };
+
+    const handleGoogleError = () => {
+        setError('Google ile kayıt iptal edildi');
     };
 
     return (
         <>
-            {/* Google OAuth Toast */}
-            <AnimatePresence>
-                {googleMessage && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -50 }}
-                        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 bg-indigo-500/90 backdrop-blur-sm border border-indigo-400/20 rounded-xl shadow-lg"
-                    >
-                        <Info className="w-5 h-5 text-white" />
-                        <span className="text-white text-sm font-medium">Google ile kayıt yakında aktif olacak!</span>
-                        <button onClick={() => setGoogleMessage(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
-                            <X className="w-4 h-4 text-white/70" />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
             <div className="h-screen flex bg-black overflow-hidden">
                 {/* Left side - Form */}
                 <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8">
@@ -119,18 +131,24 @@ export default function RegisterPage() {
                         </div>
 
                         {/* Google Signup */}
-                        <button
-                            onClick={handleGoogleSignup}
-                            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm hover:bg-white/10 transition-colors mb-4"
-                        >
-                            <svg className="w-4 h-4" viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                            </svg>
-                            Google ile kayıt ol
-                        </button>
+                        <div className="mb-4">
+                            {isGoogleLoading ? (
+                                <div className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl">
+                                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                    <span className="text-white text-sm">Google ile kayıt yapılıyor...</span>
+                                </div>
+                            ) : (
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={handleGoogleError}
+                                    theme="filled_black"
+                                    size="large"
+                                    width="100%"
+                                    text="signup_with"
+                                    shape="rectangular"
+                                />
+                            )}
+                        </div>
 
                         {/* Divider */}
                         <div className="flex items-center gap-4 mb-4">

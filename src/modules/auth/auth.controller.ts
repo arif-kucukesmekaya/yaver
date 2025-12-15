@@ -4,7 +4,8 @@ import type {
   LoginInput,
   RefreshTokenInput,
   ForgotPasswordInput,
-  ResetPasswordInput
+  ResetPasswordInput,
+  GoogleLoginInput
 } from './auth.schema';
 
 export class AuthController {
@@ -36,6 +37,21 @@ export class AuthController {
     return c.json({
       success: true,
       message: 'Login successful',
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Login with Google OAuth
+   */
+  static async googleLogin(c: any) {
+    const { credential } = c.req.valid('json') as GoogleLoginInput;
+    const result = await AuthService.loginWithGoogle(credential);
+
+    return c.json({
+      success: true,
+      message: 'Google login successful',
       data: result,
       timestamp: new Date().toISOString(),
     });
