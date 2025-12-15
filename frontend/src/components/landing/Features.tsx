@@ -16,14 +16,15 @@ import {
     LayoutTemplate
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import Image from "next/image";
 import { cn } from '@/lib/utils';
 import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
 
 export function Features() {
     return (
-        <section id="features" className="py-24 md:py-32 relative overflow-hidden bg-black">
-            {/* Background Gradient for Depth */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black via-indigo-950/20 to-black pointer-events-none" />
+        <section id="features" className="py-24 md:py-32 relative overflow-hidden">
+            {/* Background Gradient for Depth - Smoother Blend */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/5 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20"></div>
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -79,58 +80,108 @@ export function Features() {
 // ===========================================
 
 function SkeletonMarketplaces() {
-    // Visualizing 1 Product -> 3 Marketplaces
     return (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-indigo-900/20 to-black border border-white/5 relative overflow-hidden flex items-center justify-center p-6 gap-4">
-            {/* Central Hub */}
-            <div className="relative z-10 flex flex-col items-center">
-                <div className="w-12 h-12 bg-white rounded-xl shadow-xl flex items-center justify-center border border-indigo-500/30 relative z-10">
-                    <Store className="w-6 h-6 text-black" />
-                    {/* Pulsing Ring */}
-                    <div className="absolute inset-0 border-2 border-indigo-500 rounded-xl animate-ping opacity-20" />
+        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-transparent relative overflow-hidden flex items-center justify-center">
+            {/* Background Atmosphere */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 opacity-50" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-indigo-500/10 blur-[80px] rounded-full pointer-events-none" />
+
+            {/* Main Content Container - Perfectly Centered */}
+            <div className="relative z-10 flex items-center justify-between w-full max-w-[85%] px-2">
+
+                {/* Left: Source Hub */}
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                    <div className="w-20 h-20 bg-indigo-600/20 border border-indigo-500/50 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.3)]">
+                        {/* Minimalist Yaver Logo V2 - Exact Image */}
+                        <div className="relative w-full h-full p-2">
+                            <Image
+                                src="/yaver-logo.png"
+                                alt="Yaver AI Logo"
+                                fill
+                                className="object-contain rounded-2xl drop-shadow-[0_0_15px_rgba(129,140,248,0.6)]"
+                            />
+                        </div>
+                    </div>
+                    <span className="text-xs text-indigo-300 font-medium">Yaver AI</span>
                 </div>
-                <div className="h-8 w-0.5 bg-gradient-to-b from-white/20 to-transparent mt-2 md:hidden" />
-            </div>
 
-            {/* Connecting Lines (Desktop) */}
-            <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none">
-                <div className="w-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            </div>
+                {/* Laser Overlay */}
+                <div className="absolute inset-0 pointer-events-none z-0">
+                    <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="laser-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#6366F1" stopOpacity="0.1" />
+                                <stop offset="50%" stopColor="#818CF8" stopOpacity="1" />
+                                <stop offset="100%" stopColor="#A855F7" stopOpacity="0.1" />
+                            </linearGradient>
+                            <filter id="glow-strong" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                <feFlood floodColor="#818CF8" floodOpacity="0.5" result="glowColor" />
+                                <feComposite in="glowColor" in2="coloredBlur" operator="in" result="softGlow" />
+                                <feMerge>
+                                    <feMergeNode in="softGlow" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
 
-            {/* Marketplaces */}
-            <div className="flex gap-4 md:gap-12 absolute md:relative w-full justify-between px-4 md:px-0 opacity-20 md:opacity-100 scale-75 md:scale-100">
-                {/* Trendyol */}
-                <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="flex flex-col items-center gap-2 bg-black/40 p-3 rounded-lg border border-orange-500/30 backdrop-blur-sm"
-                >
-                    <span className="text-orange-500 font-bold text-xs">Trendyol</span>
-                    <div className="w-8 h-1 bg-orange-500/20 rounded-full" />
-                    <div className="w-6 h-1 bg-orange-500/20 rounded-full" />
-                </motion.div>
+                        {/* Top */}
+                        <motion.path
+                            d="M 18 50 C 40 50, 60 20, 85 20"
+                            stroke="url(#laser-gradient)" strokeWidth="1" fill="none" filter="url(#glow-strong)"
+                            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.8 }}
+                            transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+                        />
+                        {/* Middle */}
+                        <motion.path
+                            d="M 18 50 L 85 50"
+                            stroke="url(#laser-gradient)" strokeWidth="1" fill="none" filter="url(#glow-strong)"
+                            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.8 }}
+                            transition={{ duration: 2, delay: 0.2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+                        />
+                        {/* Bottom */}
+                        <motion.path
+                            d="M 18 50 C 40 50, 60 80, 85 80"
+                            stroke="url(#laser-gradient)" strokeWidth="1" fill="none" filter="url(#glow-strong)"
+                            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.8 }}
+                            transition={{ duration: 2, delay: 0.4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+                        />
+                    </svg>
+                </div>
 
-                {/* Hepsiburada */}
-                <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 3, delay: 0.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="flex flex-col items-center gap-2 bg-black/40 p-3 rounded-lg border border-orange-400/30 backdrop-blur-sm"
-                >
-                    <span className="text-orange-400 font-bold text-xs">Hepsiburada</span>
-                    <div className="w-8 h-1 bg-orange-400/20 rounded-full" />
-                    <div className="w-6 h-1 bg-orange-400/20 rounded-full" />
-                </motion.div>
+                {/* Right: Target Stack */}
+                <div className="flex flex-col gap-3 z-20 w-32 shrink-0">
+                    {/* Trendyol */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
+                        className="bg-[#0F0F11]/80 backdrop-blur-sm border border-white/5 p-2 rounded-lg flex items-center justify-between group hover:border-orange-500/30 transition-colors shadow-lg"
+                    >
+                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_#f97316]" />
+                        <span className="text-[10px] font-medium text-gray-400 group-hover:text-white transition-colors">Trendyol</span>
+                        <div className="h-4 w-0.5 bg-orange-500/20 rounded-full" />
+                    </motion.div>
 
-                {/* Amazon */}
-                <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 3, delay: 1, repeat: Infinity, ease: "easeInOut" }}
-                    className="flex flex-col items-center gap-2 bg-black/40 p-3 rounded-lg border border-yellow-500/30 backdrop-blur-sm"
-                >
-                    <span className="text-yellow-500 font-bold text-xs">Amazon</span>
-                    <div className="w-8 h-1 bg-yellow-500/20 rounded-full" />
-                    <div className="w-6 h-1 bg-yellow-500/20 rounded-full" />
-                </motion.div>
+                    {/* Hepsiburada */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}
+                        className="bg-[#0F0F11]/80 backdrop-blur-sm border border-white/5 p-2 rounded-lg flex items-center justify-between group hover:border-orange-400/30 transition-colors shadow-lg"
+                    >
+                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_#fb923c]" />
+                        <span className="text-[10px] font-medium text-gray-400 group-hover:text-white transition-colors">Hepsiburada</span>
+                        <div className="h-4 w-0.5 bg-orange-400/20 rounded-full" />
+                    </motion.div>
+
+                    {/* Amazon */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }}
+                        className="bg-[#0F0F11]/80 backdrop-blur-sm border border-white/5 p-2 rounded-lg flex items-center justify-between group hover:border-yellow-500/30 transition-colors shadow-lg"
+                    >
+                        <div className="h-1.5 w-1.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]" />
+                        <span className="text-[10px] font-medium text-gray-400 group-hover:text-white transition-colors">Amazon</span>
+                        <div className="h-4 w-0.5 bg-yellow-500/20 rounded-full" />
+                    </motion.div>
+                </div>
+
             </div>
         </div>
     );
