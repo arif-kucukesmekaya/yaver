@@ -206,6 +206,10 @@ export const aiEnhancedImages = pgTable("ai_enhanced_images", {
   id: serial("id").primaryKey(),
   productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
   imageUrl: varchar("image_url", { length: 512 }).notNull(),
+  imageType: varchar("image_type", { length: 50 }).notNull(), // 'lifestyle', 'infographic', 'detail'
+  prompt: text("prompt").notNull(),
+  metadata: jsonb("metadata"),
+  status: varchar("status", { length: 20 }).default('completed'),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -87,10 +87,13 @@ export default function NewProductPage() {
         }
     };
 
+    const [generatingMessage, setGeneratingMessage] = useState('');
+
     const handleSubmit = async () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
         setError('');
+        setGeneratingMessage('Ürün oluşturuluyor...');
 
         try {
             const productRes = await productsApi.create({
@@ -103,12 +106,21 @@ export default function NewProductPage() {
             if (!productRes.success || !productRes.data) throw new Error('Ürün oluşturulamadı');
 
             const product = productRes.data as { id: number };
-            await aiApi.generateContent(product.id, selectedMarketplaces);
+
+            setGeneratingMessage('AI içerik üretiliyor... (Metin + Görseller)');
+            await productsApi.generateAI(product.id);
+
             refetchCredits();
-            router.push(`/dashboard/products/${product.id}`);
+            setGeneratingMessage('Tamamlandı! Yönlendiriliyorsunuz...');
+
+            // Short delay before redirect so user sees completion message
+            setTimeout(() => {
+                router.push(`/dashboard/products/${product.id}`);
+            }, 500);
+
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Bir hata oluştu');
-        } finally {
+            setGeneratingMessage('');
             setIsSubmitting(false);
         }
     };
@@ -184,6 +196,28 @@ export default function NewProductPage() {
                     </button>
                 )}
             </div>
+
+            {/* Full-screen loading overlay when generating */}
+            <AnimatePresence>
+                {isSubmitting && generatingMessage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
+                    >
+                        <div className="text-center">
+                            <div className="relative w-24 h-24 mx-auto mb-6">
+                                <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                                <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+                                <Sparkles className="absolute inset-0 m-auto w-10 h-10 text-indigo-400" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-white mb-2">{generatingMessage}</h3>
+                            <p className="text-white/50 text-sm">Bu işlem birkaç saniye sürebilir</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

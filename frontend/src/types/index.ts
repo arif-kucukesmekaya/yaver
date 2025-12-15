@@ -61,6 +61,10 @@ export interface AIEnhancedImage {
     id: number;
     productId: number;
     imageUrl: string;
+    imageType: 'lifestyle' | 'infographic' | 'detail';
+    prompt?: string;
+    status?: string;
+    metadata?: Record<string, any>;
     createdAt: string;
 }
 

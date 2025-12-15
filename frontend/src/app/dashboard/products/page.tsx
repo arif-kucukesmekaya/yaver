@@ -267,9 +267,9 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             >
                 {/* Image */}
                 <div className="aspect-video bg-zinc-800 flex items-center justify-center relative overflow-hidden">
-                    {product.sourceImages?.[0]?.imageUrl ? (
+                    {(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl) ? (
                         <img
-                            src={product.sourceImages[0].imageUrl}
+                            src={product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl}
                             alt={product.brandName || 'Product'}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -335,9 +335,9 @@ function ProductRow({ product, index }: { product: Product; index: number }) {
                 className="flex items-center gap-4 p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-xl hover:border-zinc-700 transition-all group"
             >
                 <div className="w-14 h-14 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-                    {product.sourceImages?.[0]?.imageUrl ? (
+                    {(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl) ? (
                         <img
-                            src={product.sourceImages[0].imageUrl}
+                            src={product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl}
                             alt={product.brandName || 'Product'}
                             className="w-full h-full object-cover"
                         />

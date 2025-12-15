@@ -14,6 +14,10 @@ try {
 
 const port = ENV.PORT;
 
+// Initialize Background Services
+import { QueueProcessor } from './modules/queue/queue.processor';
+new QueueProcessor();
+
 // Start server
 void serve({
   fetch: app.fetch,
@@ -29,13 +33,13 @@ logger.info(`🚀 SellerAI API started`, {
 // Graceful shutdown
 const shutdown = async (signal: string) => {
   logger.info(`${signal} received, starting graceful shutdown`);
-  
+
   try {
     // Close server
     logger.info('Closing HTTP server');
     // Note: @hono/node-server doesn't expose server.close(), 
     // but process will exit cleanly
-    
+
     logger.info('Graceful shutdown completed');
     process.exit(0);
   } catch (error) {

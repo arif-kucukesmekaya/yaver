@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useProduct } from '@/hooks/useProducts';
-import { productsApi, aiApi } from '@/lib/api';
+import { productsApi } from '@/lib/api';
 import { useCredits } from '@/hooks/useCredits';
 import { cn } from '@/lib/utils';
 import {
@@ -20,8 +20,11 @@ import {
     Check,
     Trash2,
     RefreshCcw,
+    X,
+    Download,
+    ZoomIn,
 } from 'lucide-react';
-import type { ProductStatus, ListingStatus, MarketplaceListing } from '@/types';
+import type { ProductStatus, ListingStatus, MarketplaceListing, AIEnhancedImage } from '@/types';
 import { useToast } from '@/hooks/useToast';
 import { Toast } from '@/components/ui/Notifications';
 
@@ -47,6 +50,17 @@ export default function ProductDetailPage() {
     const { toast, success, error: toastError, hideToast } = useToast();
     const [isDeleting, setIsDeleting] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<AIEnhancedImage | null>(null);
+
+    // Auto-poll when processing
+    useEffect(() => {
+        if (product?.productStatus === 'processing') {
+            const interval = setInterval(() => {
+                refetch();
+            }, 3000); // Poll every 3 seconds
+            return () => clearInterval(interval);
+        }
+    }, [product?.productStatus, refetch]);
 
     if (isLoading) {
         return (
@@ -92,18 +106,23 @@ export default function ProductDetailPage() {
             toastError('Hata', 'Pazaryeri seçilmemiş');
             return;
         }
-        const marketplaceIds = product.marketplaceSelections.map(s => s.marketplaceId);
         setIsRegenerating(true);
         try {
-            await aiApi.generateContent(product.id, marketplaceIds);
+            await productsApi.generateAI(product.id);
             refetchCredits();
             await refetch();
-            success('Başarılı', 'İçerik yeniden üretildi');
+            success('Başarılı', 'İçerik üretimi başlatıldı. Sayfa otomatik güncellenecek...');
         } catch {
             toastError('Hata', 'Yeniden üretim başarısız oldu');
         } finally {
             setIsRegenerating(false);
         }
+    };
+
+    const imageTypeLabels: Record<string, string> = {
+        lifestyle: 'Yaşam Tarzı',
+        infographic: 'İnfografik',
+        detail: 'Detay',
     };
 
     return (
@@ -123,7 +142,7 @@ export default function ProductDetailPage() {
                         {status.label}
                     </div>
 
-                    <button onClick={handleRegenerate} disabled={isRegenerating} className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl disabled:opacity-50 transition-colors">
+                    <button onClick={handleRegenerate} disabled={isRegenerating || product.productStatus === 'processing'} className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl disabled:opacity-50 transition-colors">
                         {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
                         Yeniden Üret
                     </button>
@@ -136,23 +155,55 @@ export default function ProductDetailPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1 space-y-6">
+                    {/* AI Generated Images Only */}
                     <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-6">
-                        <h3 className="text-sm font-medium text-white/60 mb-4">Görseller</h3>
-                        {product.sourceImages && product.sourceImages.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-2">
-                                {product.sourceImages.map((img, i) => (
-                                    <div key={i} className="aspect-square rounded-xl overflow-hidden bg-white/5">
-                                        <img src={img.imageUrl} alt={`Product image ${i + 1}`} className="w-full h-full object-cover" />
+                        <h3 className="text-sm font-medium text-white/60 mb-4 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-indigo-400" />
+                            AI Görselleri
+                        </h3>
+
+                        {product.productStatus === 'processing' ? (
+                            <div className="py-8 text-center">
+                                <div className="relative w-16 h-16 mx-auto mb-4">
+                                    <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                                    <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+                                    <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-indigo-400" />
+                                </div>
+                                <p className="text-white/60 text-sm">AI görseller üretiliyor...</p>
+                                <p className="text-white/30 text-xs mt-1">Lütfen bekleyin</p>
+                            </div>
+                        ) : product.enhancedImages && product.enhancedImages.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-3">
+                                {product.enhancedImages.map((img, i) => (
+                                    <div
+                                        key={i}
+                                        className="group relative cursor-pointer"
+                                        onClick={() => setSelectedImage(img)}
+                                    >
+                                        <div className="aspect-square rounded-xl overflow-hidden bg-white/5 ring-2 ring-transparent hover:ring-indigo-500/50 transition-all">
+                                            <img src={img.imageUrl} alt={img.imageType} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                <ZoomIn className="w-8 h-8 text-white" />
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 flex items-center justify-between">
+                                            <span className="text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full">
+                                                {imageTypeLabels[img.imageType] || img.imageType}
+                                            </span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="aspect-square rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center">
-                                <Package className="w-16 h-16 text-white/10" />
+                            <div className="py-8 border border-dashed border-white/10 rounded-xl text-center">
+                                <Package className="w-8 h-8 text-white/10 mx-auto mb-2" />
+                                <p className="text-sm text-white/30">Henüz AI görsel üretilmedi</p>
+                                <p className="text-xs text-white/20 mt-1">"Yeniden Üret" butonuna tıklayın</p>
                             </div>
                         )}
                     </div>
 
+                    {/* Product Details */}
                     <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-6">
                         <h3 className="text-sm font-medium text-white/60 mb-4">Detaylar</h3>
                         <div className="space-y-4">
@@ -170,7 +221,12 @@ export default function ProductDetailPage() {
                             <h3 className="text-lg font-semibold text-white">Pazaryeri İçerikleri</h3>
                         </div>
 
-                        {product.listings && product.listings.length > 0 ? (
+                        {product.productStatus === 'processing' ? (
+                            <div className="py-12 text-center">
+                                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
+                                <p className="text-white/60">İçerikler üretiliyor...</p>
+                            </div>
+                        ) : product.listings && product.listings.length > 0 ? (
                             <div className="space-y-4">
                                 {product.listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)}
                             </div>
@@ -188,6 +244,55 @@ export default function ProductDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Image Lightbox Modal */}
+            <AnimatePresence>
+                {selectedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative max-w-4xl max-h-[90vh] w-full"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setSelectedImage(null)}
+                                className="absolute -top-12 right-0 p-2 text-white/60 hover:text-white transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+
+                            <img
+                                src={selectedImage.imageUrl}
+                                alt={selectedImage.imageType}
+                                className="w-full h-auto max-h-[80vh] object-contain rounded-xl"
+                            />
+
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4">
+                                <span className="px-4 py-2 bg-black/60 backdrop-blur-sm rounded-full text-white text-sm">
+                                    {imageTypeLabels[selectedImage.imageType] || selectedImage.imageType}
+                                </span>
+                                <a
+                                    href={selectedImage.imageUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                                >
+                                    <Download className="w-5 h-5" />
+                                </a>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <Toast
                 type={toast.type}
                 title={toast.title}

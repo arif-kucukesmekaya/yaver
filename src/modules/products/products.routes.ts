@@ -12,6 +12,8 @@ import {
 import { authMiddleware } from '../../core/middleware/auth';
 import { NotFoundError, ValidationError } from '../../shared/utils/errors';
 import { eq, and, desc, count } from 'drizzle-orm';
+import { AIService } from '../ai/ai.service';
+import { imageProcessingQueue } from '../../core/database/schema';
 
 const productRoutes = new Hono();
 
@@ -50,6 +52,7 @@ productRoutes.get('/', zValidator('query', querySchema), async (c) => {
     with: {
       category: true,
       sourceImages: true,
+      enhancedImages: true,
       listings: {
         with: {
           marketplace: true,
@@ -407,6 +410,118 @@ productRoutes.patch('/:id/listings/:marketplaceId', zValidator('json', updateLis
     data: listing,
     timestamp: new Date().toISOString(),
   });
+});
+
+
+// POST /products/:id/generate-ai - Trigger AI content generation
+productRoutes.post('/:id/generate-ai', async (c) => {
+  const user = c.get('user');
+  const productId = parseInt(c.req.param('id'));
+
+  if (isNaN(productId)) {
+    throw new ValidationError('Invalid product ID');
+  }
+
+  // 1. Get Product with relations
+  const product = await db.query.products.findFirst({
+    where: and(eq(products.id, productId), eq(products.userId, user.id)),
+    with: {
+      category: true,
+      marketplaceSelections: {
+        with: {
+          marketplace: true,
+        },
+      },
+      sourceImages: true,
+    },
+  });
+
+  if (!product) {
+    throw new NotFoundError('Product not found');
+  }
+
+  // Update status to processing
+  await db.update(products)
+    .set({ productStatus: 'processing', updatedAt: new Date() })
+    .where(eq(products.id, productId));
+
+  try {
+    // 2. Queue Image Generation (Async)
+    // Need source image for queue record (even if doing text-to-image mostly)
+    const sourceImage = product.sourceImages[0]?.imageUrl || 'https://via.placeholder.com/500?text=No+Image';
+
+    await db.insert(imageProcessingQueue).values({
+      productId: product.id,
+      sourceImageUrl: sourceImage,
+      status: 'pending',
+    });
+
+    // 3. Generate Text Listings (Sync process for now)
+    // Iterate over selected marketplaces
+    const generationResults = [];
+
+    for (const selection of product.marketplaceSelections) {
+      if (selection.isSelected) {
+        const marketplaceName = selection.marketplace.name;
+
+        try {
+          const aiContent = await AIService.generateListing(product, marketplaceName);
+
+          // Save to marketplaceListings table
+          // Check if exists first
+          const existingListing = await db.query.marketplaceListings.findFirst({
+            where: and(
+              eq(marketplaceListings.productId, product.id),
+              eq(marketplaceListings.marketplaceId, selection.marketplaceId)
+            )
+          });
+
+          if (existingListing) {
+            await db.update(marketplaceListings)
+              .set({
+                generatedTitle: aiContent.title,
+                generatedDescription: aiContent.description, // HTML/Bullet points
+                listingStatus: 'draft',
+                updatedAt: new Date()
+              })
+              .where(eq(marketplaceListings.id, existingListing.id));
+          } else {
+            await db.insert(marketplaceListings).values({
+              productId: product.id,
+              marketplaceId: selection.marketplaceId,
+              generatedTitle: aiContent.title,
+              generatedDescription: aiContent.description,
+              listingStatus: 'draft'
+            });
+          }
+
+          generationResults.push({ marketplace: marketplaceName, success: true });
+
+        } catch (error) {
+          console.error(`Failed generation for ${marketplaceName}:`, error);
+          generationResults.push({ marketplace: marketplaceName, success: false });
+        }
+      }
+    }
+
+    return c.json({
+      success: true,
+      message: 'AI generation started',
+      data: {
+        textResults: generationResults,
+        imageJob: 'queued'
+      }
+    });
+
+  } catch (error) {
+    console.error('Generation Error:', error);
+    // Revert status on critical fail
+    await db.update(products)
+      .set({ productStatus: 'failed', updatedAt: new Date() })
+      .where(eq(products.id, productId));
+
+    throw error;
+  }
 });
 
 export { productRoutes };

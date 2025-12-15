@@ -202,6 +202,8 @@ export const productsApi = {
 
     updateListing: (productId: number, marketplaceId: number, data: unknown) =>
         api.patch<unknown>(`/products/${productId}/listings/${marketplaceId}`, data),
+
+    generateAI: (productId: number) => api.post<{ success: boolean; message: string; data: any }>(`/products/${productId}/generate-ai`),
 };
 
 
