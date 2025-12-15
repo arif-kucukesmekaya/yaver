@@ -5,41 +5,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import {
     LayoutDashboard,
     Package,
     CreditCard,
     Settings,
     ChevronLeft,
-    ChevronRight,
     Plus,
     LogOut,
-    Sparkles,
     Menu,
     X,
 } from 'lucide-react';
 
 const navItems = [
-    {
-        label: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutDashboard,
-    },
-    {
-        label: 'Ürünler',
-        href: '/dashboard/products',
-        icon: Package,
-    },
-    {
-        label: 'Krediler',
-        href: '/dashboard/credits',
-        icon: CreditCard,
-    },
-    {
-        label: 'Ayarlar',
-        href: '/dashboard/settings',
-        icon: Settings,
-    },
+    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { label: 'Ürünler', href: '/dashboard/products', icon: Package },
+    { label: 'Krediler', href: '/dashboard/credits', icon: CreditCard },
+    { label: 'Ayarlar', href: '/dashboard/settings', icon: Settings },
 ];
 
 interface SidebarProps {
@@ -51,97 +34,75 @@ export function Sidebar({ onLogout }: SidebarProps) {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const pathname = usePathname();
 
-    // Close mobile menu on route change
     useEffect(() => {
         setIsMobileOpen(false);
     }, [pathname]);
 
-    // Close mobile menu on resize to desktop
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth >= 1024) {
-                setIsMobileOpen(false);
-            }
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
     const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
-        <>
-            {/* Header */}
-            <div className="p-4 flex items-center justify-between border-b border-white/[0.08]">
+        <div className="flex flex-col h-full bg-[#0c0c0f]">
+            {/* Logo */}
+            <div className="h-16 px-5 flex items-center justify-between">
                 <AnimatePresence mode="wait">
                     {(!isCollapsed || isMobile) && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
+                            className="flex items-center gap-2"
                         >
-                            <Link
-                                href="/dashboard"
-                                className="text-2xl font-bold text-white"
-                                style={{ fontFamily: 'var(--font-space), system-ui, sans-serif' }}
-                            >
-                                yaver
-                            </Link>
+                            <Image
+                                src="/yaver-logo.png"
+                                alt="Yaver Logo"
+                                width={32}
+                                height={32}
+                                className="rounded-lg"
+                            />
+                            <span className="text-lg font-semibold text-white">yaver</span>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
                 {isMobile ? (
-                    <button
-                        onClick={() => setIsMobileOpen(false)}
-                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-                    >
+                    <button onClick={() => setIsMobileOpen(false)} className="p-2 text-zinc-400 hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                 ) : (
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors hidden lg:flex"
+                        className="p-2 text-zinc-500 hover:text-white transition-colors hidden lg:flex"
                     >
-                        {isCollapsed ? (
-                            <ChevronRight className="w-4 h-4" />
-                        ) : (
-                            <ChevronLeft className="w-4 h-4" />
-                        )}
+                        <ChevronLeft className={cn("w-4 h-4 transition-transform", isCollapsed && "rotate-180")} />
                     </button>
                 )}
             </div>
 
-            {/* Quick Action */}
-            <div className="p-4">
-                <Link
-                    href="/dashboard/products/new"
-                    onClick={() => isMobile && setIsMobileOpen(false)}
-                    className={cn(
-                        'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all',
-                        'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
-                        'hover:from-indigo-600 hover:to-purple-600',
-                        'shadow-lg shadow-indigo-500/25',
-                        isCollapsed && !isMobile && 'justify-center px-3'
-                    )}
-                >
-                    <Plus className="w-5 h-5" />
-                    <AnimatePresence mode="wait">
-                        {(!isCollapsed || isMobile) && (
-                            <motion.span
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 'auto' }}
-                                exit={{ opacity: 0, width: 0 }}
-                                className="whitespace-nowrap overflow-hidden"
-                            >
-                                Yeni Ürün
-                            </motion.span>
+            {/* Create Button */}
+            <div className="px-3 mb-2">
+                <Link href="/dashboard/products/new" onClick={() => isMobile && setIsMobileOpen(false)}>
+                    <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={cn(
+                            "flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm",
+                            "bg-blue-500 text-white hover:bg-blue-600 transition-colors",
+                            "shadow-lg shadow-blue-500/20",
+                            isCollapsed && !isMobile && "justify-center px-3"
                         )}
-                    </AnimatePresence>
+                    >
+                        <Plus className="w-4 h-4" />
+                        {(!isCollapsed || isMobile) && <span>Yeni Ürün</span>}
+                    </motion.div>
                 </Link>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-3">
+            <nav className="flex-1 px-3 py-4">
+                <p className={cn(
+                    "text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-3 px-3",
+                    isCollapsed && !isMobile && "hidden"
+                )}>
+                    Menü
+                </p>
                 <ul className="space-y-1">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href ||
@@ -153,29 +114,24 @@ export function Sidebar({ onLogout }: SidebarProps) {
                                     href={item.href}
                                     onClick={() => isMobile && setIsMobileOpen(false)}
                                     className={cn(
-                                        'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+                                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm relative group",
                                         isActive
-                                            ? 'bg-white/10 text-white'
-                                            : 'text-white/60 hover:bg-white/5 hover:text-white',
-                                        isCollapsed && !isMobile && 'justify-center px-3'
+                                            ? "bg-zinc-800/80 text-white"
+                                            : "text-zinc-400 hover:text-white hover:bg-zinc-800/40",
+                                        isCollapsed && !isMobile && "justify-center"
                                     )}
                                 >
-                                    <item.icon className="w-5 h-5" />
-                                    <AnimatePresence mode="wait">
-                                        {(!isCollapsed || isMobile) && (
-                                            <motion.span
-                                                initial={{ opacity: 0, width: 0 }}
-                                                animate={{ opacity: 1, width: 'auto' }}
-                                                exit={{ opacity: 0, width: 0 }}
-                                                className="whitespace-nowrap overflow-hidden"
-                                            >
-                                                {item.label}
-                                            </motion.span>
-                                        )}
-                                    </AnimatePresence>
-                                    {isActive && (!isCollapsed || isMobile) && (
-                                        <Sparkles className="w-4 h-4 ml-auto text-indigo-400" />
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeNav"
+                                            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"
+                                        />
                                     )}
+                                    <item.icon className={cn(
+                                        "w-[18px] h-[18px] transition-colors",
+                                        isActive ? "text-blue-400" : "text-zinc-500 group-hover:text-zinc-300"
+                                    )} />
+                                    {(!isCollapsed || isMobile) && <span>{item.label}</span>}
                                 </Link>
                             </li>
                         );
@@ -184,42 +140,31 @@ export function Sidebar({ onLogout }: SidebarProps) {
             </nav>
 
             {/* Footer */}
-            <div className="p-3 border-t border-white/[0.08]">
+            <div className="p-3 border-t border-zinc-800/50">
                 <button
                     onClick={() => {
                         if (isMobile) setIsMobileOpen(false);
                         onLogout?.();
                     }}
                     className={cn(
-                        'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
-                        'text-white/40 hover:bg-red-500/10 hover:text-red-400',
-                        isCollapsed && !isMobile && 'justify-center px-3'
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm",
+                        "text-zinc-500 hover:text-red-400 hover:bg-red-500/5 transition-all",
+                        isCollapsed && !isMobile && "justify-center"
                     )}
                 >
-                    <LogOut className="w-5 h-5" />
-                    <AnimatePresence mode="wait">
-                        {(!isCollapsed || isMobile) && (
-                            <motion.span
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 'auto' }}
-                                exit={{ opacity: 0, width: 0 }}
-                                className="whitespace-nowrap overflow-hidden"
-                            >
-                                Çıkış Yap
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
+                    <LogOut className="w-[18px] h-[18px]" />
+                    {(!isCollapsed || isMobile) && <span>Çıkış Yap</span>}
                 </button>
             </div>
-        </>
+        </div>
     );
 
     return (
         <>
-            {/* Mobile Menu Button */}
+            {/* Mobile Toggle */}
             <button
                 onClick={() => setIsMobileOpen(true)}
-                className="fixed top-4 left-4 z-40 p-3 rounded-xl bg-black/80 border border-white/[0.08] text-white lg:hidden"
+                className="fixed top-4 left-4 z-40 p-2.5 rounded-xl bg-zinc-900/90 backdrop-blur border border-zinc-800 text-white lg:hidden"
             >
                 <Menu className="w-5 h-5" />
             </button>
@@ -245,7 +190,7 @@ export function Sidebar({ onLogout }: SidebarProps) {
                         animate={{ x: 0 }}
                         exit={{ x: -280 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed left-0 top-0 z-50 h-screen w-[280px] bg-black border-r border-white/[0.08] flex flex-col lg:hidden"
+                        className="fixed left-0 top-0 z-50 h-screen w-[260px] border-r border-zinc-800 lg:hidden"
                     >
                         <SidebarContent isMobile />
                     </motion.aside>
@@ -255,9 +200,9 @@ export function Sidebar({ onLogout }: SidebarProps) {
             {/* Desktop Sidebar */}
             <motion.aside
                 initial={false}
-                animate={{ width: isCollapsed ? 80 : 280 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="h-screen sticky top-0 bg-black/40 border-r border-white/[0.08] flex-col hidden lg:flex"
+                animate={{ width: isCollapsed ? 72 : 260 }}
+                transition={{ duration: 0.2 }}
+                className="h-screen sticky top-0 border-r border-zinc-800/50 hidden lg:block"
             >
                 <SidebarContent />
             </motion.aside>

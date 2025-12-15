@@ -12,13 +12,11 @@ creditsRoutes.use('*', authMiddleware);
 // GET /credits - Get user's credit balance
 creditsRoutes.get('/', async (c) => {
   const user = c.get('user');
-  const available = await CreditService.getUserCredits(user.id);
+  const details = await CreditService.getUserCreditDetails(user.id);
 
   return c.json({
     success: true,
-    data: {
-      availableCredits: available,
-    },
+    data: details,
     timestamp: new Date().toISOString(),
   });
 });
@@ -53,7 +51,7 @@ creditsRoutes.post('/purchase', zValidator('json', z.object({
     `Credit purchase: ${amount} credits`
   );
 
-  const newBalance = await CreditService.getUserCredits(user.id);
+  const newBalance = await CreditService.getUserCreditDetails(user.id);
 
   return c.json({
     success: true,

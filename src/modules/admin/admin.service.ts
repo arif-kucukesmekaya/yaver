@@ -122,7 +122,7 @@ export class AdminService {
                 email: u.email,
                 firstName: u.profile?.firstName,
                 lastName: u.profile?.lastName,
-                credits: u.credits?.availableCredits || 0,
+                credits: (u.credits?.subscriptionCredits || 0) + (u.credits?.extraCredits || 0),
                 roles: u.userRoles.map(ur => ur.role?.roleName).filter(Boolean),
                 subscription: u.subscriptions[0]?.plan?.name || 'Free',
                 createdAt: u.createdAt,
@@ -212,16 +212,20 @@ export class AdminService {
 
         // The trigger will automatically update user_credits
 
-        // Fetch updated credits
-        const updatedCredits = await db.query.userCredits.findFirst({
-            where: eq(userCredits.userId, userId),
-        });
+        // Update credits
+        await db
+            .update(userCredits)
+            .set({
+                extraCredits: sql`${userCredits.extraCredits} + ${amount}`,
+            })
+            .where(eq(userCredits.userId, userId));
 
         return {
             userId,
-            previousBalance: user.credits?.availableCredits || 0,
-            adjustment: amount,
-            newBalance: updatedCredits?.availableCredits || 0,
+            previousBalance: (user.credits?.subscriptionCredits || 0) + (user.credits?.extraCredits || 0),
+            // newBalance updatedCredits'den hesaplanmalı ama updatedCredits insert sonrası dönen değerse ve select yapıldıysa...
+            // Basitleştirmek için transaction miktarını ekleyelim
+            newBalance: ((user.credits?.subscriptionCredits || 0) + (user.credits?.extraCredits || 0)) + amount,
             reason,
         };
     }

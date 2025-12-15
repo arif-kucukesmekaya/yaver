@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { DashboardHeader } from '@/components/dashboard/Header';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
@@ -18,42 +20,58 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         }
     }, [isLoading, isAuthenticated, router]);
 
-    // Show loading while checking auth
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-white/50 text-sm">Yükleniyor...</span>
-                </div>
+            <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center gap-6"
+                >
+                    <motion.div
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                        <Image
+                            src="/yaver-logo.png"
+                            alt="Yaver Logo"
+                            width={56}
+                            height={56}
+                            className="rounded-2xl"
+                        />
+                    </motion.div>
+                    <div className="text-center">
+                        <p className="text-white font-semibold text-lg">yaver</p>
+                        <p className="text-zinc-500 text-sm mt-1">Yükleniyor...</p>
+                    </div>
+                </motion.div>
             </div>
         );
     }
 
-    // Don't render if not authenticated (will redirect)
     if (!isAuthenticated) {
         return null;
     }
 
     return (
-        <div className="min-h-screen bg-black flex">
-            {/* Sidebar */}
+        <div className="min-h-screen bg-[#0a0a0c] flex">
             <Sidebar onLogout={logout} />
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col min-h-screen overflow-hidden w-full">
-                {/* Header */}
+            <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
                 <DashboardHeader
                     user={user}
                     creditBalance={creditBalance}
                     onLogout={logout}
                 />
 
-                {/* Page Content */}
                 <main className="flex-1 overflow-auto">
-                    <div className="p-4 pt-16 lg:pt-4 lg:p-6 max-w-7xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="p-4 pt-16 lg:pt-6 lg:p-6 max-w-7xl mx-auto"
+                    >
                         {children}
-                    </div>
+                    </motion.div>
                 </main>
             </div>
         </div>

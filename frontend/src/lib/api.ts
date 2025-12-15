@@ -1,4 +1,4 @@
-import type { ApiResponse, PaginatedResponse } from '@/types';
+import type { ApiResponse, PaginatedResponse, UserCredits } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8881';
 
@@ -204,13 +204,20 @@ export const productsApi = {
         api.patch<unknown>(`/products/${productId}/listings/${marketplaceId}`, data),
 };
 
+
+
 export const creditsApi = {
-    getBalance: () => api.get<{ availableCredits: number }>('/credits'),
+    getBalance: () => api.get<UserCredits>('/credits'),
 
     getHistory: (limit = 20) => api.get<unknown[]>('/credits/history', { limit: String(limit) }),
 
-    purchase: (amount: number) => api.post<{ creditsPurchased: number; newBalance: number }>('/credits/purchase', { amount }),
+    purchase: (amount: number) => api.post<{ creditsPurchased: number; newBalance: UserCredits }>('/credits/purchase', { amount }),
 };
+
+export const subscriptionApi = {
+    upgrade: (planName: string) => api.post<{ success: boolean; data: any }>('/subscriptions/upgrade', { planName }),
+};
+
 
 export const aiApi = {
     generateContent: (productId: number, marketplaceIds: number[]) =>

@@ -114,7 +114,11 @@ export const creditTransactions = pgTable("credit_transactions", {
 
 export const userCredits = pgTable("user_credits", {
   userId: integer("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
-  availableCredits: integer("available_credits").notNull().default(0),
+  // subscriptionCredits: Aylık yenilenen, kullanılmazsa silinen kredi
+  subscriptionCredits: integer("subscription_credits").notNull().default(0),
+  // extraCredits: Satın alınan, silinmeyen, birikimli kredi
+  extraCredits: integer("extra_credits").notNull().default(0),
+  // Geriye dönük uyumluluk veya toplam gösterim için (computed/updated by logic)
   totalEarned: integer("total_earned").notNull().default(0),
   totalSpent: integer("total_spent").notNull().default(0),
   lastRefillDate: timestamp("last_refill_date"),
@@ -348,5 +352,23 @@ export const creditTransactionsRelations = relations(creditTransactions, ({ one 
   user: one(users, {
     fields: [creditTransactions.userId],
     references: [users.id],
+  }),
+}));
+
+export const generationErrorsRelations = relations(generationErrors, ({ one }) => ({
+  product: one(products, {
+    fields: [generationErrors.productId],
+    references: [products.id],
+  }),
+  marketplace: one(marketplaces, {
+    fields: [generationErrors.marketplaceId],
+    references: [marketplaces.id],
+  }),
+}));
+
+export const imageProcessingQueueRelations = relations(imageProcessingQueue, ({ one }) => ({
+  product: one(products, {
+    fields: [imageProcessingQueue.productId],
+    references: [products.id],
   }),
 }));

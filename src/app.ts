@@ -18,6 +18,9 @@ import {
   marketplaceRoutes,
   categoriesRoutes,
   adminRoutes,
+  queueRoutes,
+  errorsRoutes,
+  subscriptionRoutes,
 } from './modules';
 
 const app = new Hono();
@@ -72,6 +75,9 @@ app.route('/products', productsRoutes);
 app.route('/credits', creditsRoutes);
 app.route('/marketplaces', marketplaceRoutes);
 app.route('/categories', categoriesRoutes);
+app.route('/queue', queueRoutes);
+app.route('/errors', errorsRoutes);
+app.route('/subscriptions', subscriptionRoutes);
 
 // Admin routes (protected by auth + admin middleware)
 app.route('/admin', adminRoutes);

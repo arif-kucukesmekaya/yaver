@@ -6,3 +6,8 @@ export { default as uploadRoutes } from './upload/upload.routes';
 export { default as marketplaceRoutes } from './marketplace/marketplace.routes';
 export { default as categoriesRoutes } from './categories/categories.routes';
 export { default as adminRoutes } from './admin/admin.routes';
+export { default as queueRoutes } from './queue/queue.routes';
+export { default as errorsRoutes } from './errors/errors.routes';
+export { default as subscriptionRoutes } from './subscriptions/subscription.routes';
+
+

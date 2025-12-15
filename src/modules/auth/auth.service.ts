@@ -61,7 +61,8 @@ export class AuthService {
     // Initialize user credits (Free plan: 10 credits)
     await db.insert(userCredits).values({
       userId: newUser.id,
-      availableCredits: 10,
+      subscriptionCredits: 10,
+      extraCredits: 0,
       totalEarned: 10,
       totalSpent: 0,
     });
@@ -150,7 +151,7 @@ export class AuthService {
         email: user.email,
         firstName: user.profile?.firstName,
         lastName: user.profile?.lastName,
-        credits: user.credits?.availableCredits || 0,
+        credits: (user.credits?.subscriptionCredits || 0) + (user.credits?.extraCredits || 0),
       },
       accessToken,
       refreshToken,
@@ -202,7 +203,8 @@ export class AuthService {
       // Initialize user credits (Free plan: 10 credits)
       await db.insert(userCredits).values({
         userId: newUser.id,
-        availableCredits: 10,
+        subscriptionCredits: 10,
+        extraCredits: 0,
         totalEarned: 10,
         totalSpent: 0,
       });
@@ -253,7 +255,7 @@ export class AuthService {
         email: user.email,
         firstName: user.profile?.firstName,
         lastName: user.profile?.lastName,
-        credits: user.credits?.availableCredits || 0,
+        credits: (user.credits?.subscriptionCredits || 0) + (user.credits?.extraCredits || 0),
       },
       accessToken,
       refreshToken,
@@ -418,7 +420,9 @@ export class AuthService {
       phoneNumber: userData.profile?.phoneNumber,
       companyName: userData.profile?.companyName,
       credits: {
-        available: userData.credits?.availableCredits || 0,
+        available: (userData.credits?.subscriptionCredits || 0) + (userData.credits?.extraCredits || 0),
+        subscription: userData.credits?.subscriptionCredits || 0,
+        extra: userData.credits?.extraCredits || 0,
         totalEarned: userData.credits?.totalEarned || 0,
         totalSpent: userData.credits?.totalSpent || 0,
       },

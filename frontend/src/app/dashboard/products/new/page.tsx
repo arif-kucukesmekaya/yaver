@@ -21,7 +21,7 @@ import {
     AlertCircle,
     Coins,
 } from 'lucide-react';
-import type { Marketplace, Category } from '@/types';
+import type { Marketplace, Category, UserCredits } from '@/types';
 
 const steps = [
     { id: 1, title: 'Ürün Bilgileri', icon: Package },
@@ -75,12 +75,14 @@ export default function NewProductPage() {
         return total + (mp?.configs?.[0]?.config?.credit_cost ?? 1);
     }, 0);
 
+    const availableCredits = typeof creditBalance === 'number' ? creditBalance : (creditBalance?.available || 0);
+
     const canProceed = () => {
         switch (currentStep) {
             case 1: return formData.rawUserPrompt.length >= 10;
             case 2: return true;
             case 3: return selectedMarketplaces.length > 0;
-            case 4: return creditBalance >= creditCost;
+            case 4: return availableCredits >= creditCost;
             default: return false;
         }
     };
@@ -289,8 +291,9 @@ function StepThree({ marketplaces, selected, onToggle }: { marketplaces: Marketp
     );
 }
 
-function StepFour({ formData, images, marketplaces, creditCost, creditBalance }: { formData: FormData; images: File[]; marketplaces: Marketplace[]; creditCost: number; creditBalance: number }) {
-    const hasEnoughCredits = creditBalance >= creditCost;
+function StepFour({ formData, images, marketplaces, creditCost, creditBalance }: { formData: FormData; images: File[]; marketplaces: Marketplace[]; creditCost: number; creditBalance: number | UserCredits }) {
+    const availableCredits = typeof creditBalance === 'number' ? creditBalance : (creditBalance?.available || 0);
+    const hasEnoughCredits = availableCredits >= creditCost;
     return (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
             <div>
@@ -307,7 +310,7 @@ function StepFour({ formData, images, marketplaces, creditCost, creditBalance }:
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Coins className={cn('w-5 h-5', hasEnoughCredits ? 'text-green-400' : 'text-red-400')} />
-                        <div><p className="text-sm font-medium text-white">Toplam Maliyet</p><p className="text-xs text-white/50">Bakiye: {creditBalance} kredi</p></div>
+                        <div><p className="text-sm font-medium text-white">Toplam Maliyet</p><p className="text-xs text-white/50">Bakiye: {availableCredits} kredi</p></div>
                     </div>
                     <span className={cn('text-2xl font-bold', hasEnoughCredits ? 'text-green-400' : 'text-red-400')}>{creditCost}</span>
                 </div>

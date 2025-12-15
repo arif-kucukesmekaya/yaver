@@ -4,7 +4,22 @@ export interface User {
     email: string;
     firstName?: string;
     lastName?: string;
-    credits?: number;
+    // Backend returns an object now, but keeping union for compatibility if needed. 
+    // Ideally should be UserCredits object.
+    credits?: UserCredits | number;
+    subscription?: {
+        plan?: string;
+        isActive?: boolean;
+        endDate?: string;
+    };
+}
+
+export interface UserCredits {
+    available: number;
+    subscription: number;
+    extra: number;
+    totalEarned: number;
+    totalSpent: number;
 }
 
 export interface UserProfile {
@@ -99,11 +114,7 @@ export interface ProductMarketplaceSelection {
 // Credit types
 export type TransactionType = 'purchase' | 'monthly_refill' | 'usage' | 'bonus';
 
-export interface CreditBalance {
-    availableCredits: number;
-    totalEarned?: number;
-    totalSpent?: number;
-}
+export interface CreditBalance extends UserCredits { }
 
 export interface CreditTransaction {
     id: number;

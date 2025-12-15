@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CreditTransaction } from '@/types';
+import type { CreditTransaction, UserCredits } from '@/types';
 import { creditsApi } from '@/lib/api';
 
 function hasToken(): boolean {
@@ -9,13 +9,25 @@ function hasToken(): boolean {
 }
 
 export function useCredits() {
-    const [balance, setBalance] = useState<number>(0);
+    const [balance, setBalance] = useState<UserCredits>({
+        available: 0,
+        subscription: 0,
+        extra: 0,
+        totalEarned: 0,
+        totalSpent: 0
+    });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const fetchBalance = useCallback(async () => {
         if (!hasToken()) {
-            setBalance(0);
+            setBalance({
+                available: 0,
+                subscription: 0,
+                extra: 0,
+                totalEarned: 0,
+                totalSpent: 0
+            });
             return;
         }
 
@@ -25,7 +37,7 @@ export function useCredits() {
         try {
             const response = await creditsApi.getBalance();
             if (response.success && response.data) {
-                setBalance(response.data.availableCredits);
+                setBalance(response.data);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch credits');
@@ -36,6 +48,13 @@ export function useCredits() {
 
     useEffect(() => {
         fetchBalance();
+
+        const handleCreditUpdate = () => {
+            fetchBalance();
+        };
+
+        window.addEventListener('credits-updated', handleCreditUpdate);
+        return () => window.removeEventListener('credits-updated', handleCreditUpdate);
     }, [fetchBalance]);
 
     const purchaseCredits = async (amount: number) => {
@@ -43,6 +62,8 @@ export function useCredits() {
             const response = await creditsApi.purchase(amount);
             if (response.success && response.data) {
                 setBalance(response.data.newBalance);
+                // Notify other components (like Header) to update
+                window.dispatchEvent(new Event('credits-updated'));
                 return response.data;
             }
             throw new Error('Purchase failed');
@@ -88,6 +109,13 @@ export function useCreditHistory(limit = 20) {
 
     useEffect(() => {
         fetchHistory();
+
+        const handleCreditUpdate = () => {
+            fetchHistory();
+        };
+
+        window.addEventListener('credits-updated', handleCreditUpdate);
+        return () => window.removeEventListener('credits-updated', handleCreditUpdate);
     }, [fetchHistory]);
 
     return { transactions, isLoading, error, refetch: fetchHistory };
