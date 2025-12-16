@@ -7,6 +7,7 @@ import {
   productSourceImages,
   productMarketplaceSelections,
   marketplaceListings,
+  aiEnhancedImages,
   categories,
 } from '../../core/database/schema';
 import { authMiddleware } from '../../core/middleware/auth';
@@ -446,8 +447,24 @@ productRoutes.post('/:id/generate-ai', async (c) => {
     .where(eq(products.id, productId));
 
   try {
-    // 2. Queue Image Generation (Async)
-    // Need source image for queue record (even if doing text-to-image mostly)
+    // 2. 🔥 CLEANUP: Delete old generation data first (fresh start!)
+    console.log(`🗑️ Cleaning old generation data for product ${productId}...`);
+
+    // Delete old AI-generated images
+    await db.delete(aiEnhancedImages)
+      .where(eq(aiEnhancedImages.productId, productId));
+
+    // Delete old marketplace listings
+    await db.delete(marketplaceListings)
+      .where(eq(marketplaceListings.productId, productId));
+
+    // Delete old/failed queue jobs
+    await db.delete(imageProcessingQueue)
+      .where(eq(imageProcessingQueue.productId, productId));
+
+    console.log(`✅ Cleanup complete - starting fresh generation`);
+
+    // 3. Queue NEW Image Generation Job
     const sourceImage = product.sourceImages[0]?.imageUrl || 'https://via.placeholder.com/500?text=No+Image';
 
     await db.insert(imageProcessingQueue).values({
@@ -456,8 +473,7 @@ productRoutes.post('/:id/generate-ai', async (c) => {
       status: 'pending',
     });
 
-    // 3. Generate Text Listings (Sync process for now)
-    // Iterate over selected marketplaces
+    // 4. ⚡ Generate Text Listings (PARALLEL for speed)
     const generationResults = [];
 
     for (const selection of product.marketplaceSelections) {

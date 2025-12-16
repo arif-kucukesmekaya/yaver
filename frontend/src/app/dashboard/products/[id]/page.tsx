@@ -49,18 +49,82 @@ export default function ProductDetailPage() {
     const { refetch: refetchCredits } = useCredits();
     const { toast, success, error: toastError, hideToast } = useToast();
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isRegenerating, setIsRegenerating] = useState(false);
     const [selectedImage, setSelectedImage] = useState<AIEnhancedImage | null>(null);
 
-    // Auto-poll when processing
+    // 🔥 Loading is based on DB status, NOT local state (survives refresh!)
+    const isProcessing = product?.productStatus === 'processing';
+
+    // ⚡ Real-time updates via Server-Sent Events with Polling Fallback
     useEffect(() => {
-        if (product?.productStatus === 'processing') {
-            const interval = setInterval(() => {
+        if (!productId || !isProcessing) return;
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8881';
+        let eventSource: EventSource | null = null;
+        let pollingInterval: NodeJS.Timeout | null = null;
+        let sseConnected = false;
+
+        // Try SSE first
+        try {
+            eventSource = new EventSource(`${API_BASE_URL}/sse/products/${productId}/updates?token=${encodeURIComponent(token)}`);
+            console.log('🔗 SSE Connecting for product', productId);
+
+            eventSource.onopen = () => {
+                sseConnected = true;
+                console.log('✅ SSE Connected successfully');
+            };
+
+            eventSource.addEventListener('status', (event: MessageEvent) => {
+                const data = JSON.parse(event.data);
+                console.log('📊 Status Update:', data);
                 refetch();
-            }, 3000); // Poll every 3 seconds
-            return () => clearInterval(interval);
+            });
+
+            eventSource.addEventListener('image', (event: MessageEvent) => {
+                const data = JSON.parse(event.data);
+                console.log('🖼️ Image Generated:', data);
+                refetch();
+            });
+
+            eventSource.addEventListener('complete', (event: MessageEvent) => {
+                const data = JSON.parse(event.data);
+                console.log('✅ Generation Complete!', data);
+                refetch();
+                success('Tamamlandı!', 'Tüm içerikler ve görseller hazır ✨');
+                if (eventSource) eventSource.close();
+            });
+
+            eventSource.onerror = (error) => {
+                console.error('❌ SSE Error:', error);
+                if (eventSource) eventSource.close();
+
+                // ✅ FALLBACK: Start polling if SSE fails
+                if (!sseConnected && !pollingInterval) {
+                    console.log('⚠️ SSE failed, falling back to polling...');
+                    pollingInterval = setInterval(() => {
+                        console.log('🔄 Polling product status...');
+                        refetch();
+                    }, 3000); // Poll every 3 seconds
+                }
+            };
+        } catch (error) {
+            console.error('❌ SSE Initialization Error:', error);
+            // ✅ FALLBACK: Start polling immediately
+            pollingInterval = setInterval(() => {
+                console.log('🔄 Polling product status (SSE init failed)...');
+                refetch();
+            }, 3000);
         }
-    }, [product?.productStatus, refetch]);
+
+        return () => {
+            console.log('🔌 SSE/Polling Cleanup');
+            if (eventSource) eventSource.close();
+            if (pollingInterval) clearInterval(pollingInterval);
+        };
+    }, [productId, isProcessing, refetch, success]);
+
 
     if (isLoading) {
         return (
@@ -106,18 +170,20 @@ export default function ProductDetailPage() {
             toastError('Hata', 'Pazaryeri seçilmemiş');
             return;
         }
-        setIsRegenerating(true);
+
         try {
             await productsApi.generateAI(product.id);
             refetchCredits();
-            await refetch();
-            success('Başarılı', 'İçerik üretimi başlatıldı. Sayfa otomatik güncellenecek...');
-        } catch {
-            toastError('Hata', 'Yeniden üretim başarısız oldu');
-        } finally {
-            setIsRegenerating(false);
+            success('Başlatıldı', 'AI içerik üretimi başladı...');
+            // Backend will set product_status='processing' → Loading will show automatically
+            await refetch(); // Refetch to get updated status
+        } catch (err) {
+            toastError('Hata', 'İçerik üretimi başlatılamadı');
+            console.error(err);
         }
     };
+
+
 
     const imageTypeLabels: Record<string, string> = {
         lifestyle: 'Yaşam Tarzı',
@@ -127,6 +193,60 @@ export default function ProductDetailPage() {
 
     return (
         <div className="space-y-6">
+            {/* 🎨 UNIFIED LOADING OVERLAY - Only show during manual regeneration */}
+            <AnimatePresence>
+                {isProcessing && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 border border-white/10 rounded-3xl p-12 max-w-md w-full mx-4 text-center"
+                        >
+                            {/* Animated Icon */}
+                            <div className="relative w-24 h-24 mx-auto mb-6">
+                                <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                                <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+                                <Sparkles className="absolute inset-0 m-auto w-10 h-10 text-indigo-400 animate-pulse" />
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="text-2xl font-bold text-white mb-3">
+                                ✨ AI Çalışıyor
+                            </h3>
+                            <p className="text-white/60 mb-8">
+                                İçerikler ve görseller üretiliyor...
+                            </p>
+
+                            {/* Progress Steps */}
+                            <div className="space-y-4 text-left">
+                                <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl">
+                                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                                    <span className="text-sm text-white/80">📝 Pazaryeri başlıkları üretiliyor</span>
+                                </div>
+                                <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl">
+                                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                                    <span className="text-sm text-white/80">📄 Açıklamalar optimize ediliyor</span>
+                                </div>
+                                <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl">
+                                    <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                                    <span className="text-sm text-white/80">🖼️ Görseller oluşturuluyor</span>
+                                </div>
+                            </div>
+
+                            {/* Estimated Time */}
+                            <p className="text-xs text-white/40 mt-6">
+                                Tahmini süre: 10-15 saniye
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <Link href="/dashboard/products" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors mb-2">
@@ -142,8 +262,8 @@ export default function ProductDetailPage() {
                         {status.label}
                     </div>
 
-                    <button onClick={handleRegenerate} disabled={isRegenerating || product.productStatus === 'processing'} className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl disabled:opacity-50 transition-colors">
-                        {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
+                    <button onClick={handleRegenerate} disabled={isProcessing} className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl disabled:opacity-50 transition-colors">
+                        {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
                         Yeniden Üret
                     </button>
 
@@ -235,8 +355,8 @@ export default function ProductDetailPage() {
                                 <Sparkles className="w-12 h-12 text-white/10 mx-auto mb-4" />
                                 <h4 className="text-lg font-medium text-white mb-2">Henüz içerik üretilmemiş</h4>
                                 <p className="text-sm text-white/50 mb-6">Pazaryerleri için AI içerik üretmek için butona tıklayın</p>
-                                <button onClick={handleRegenerate} disabled={isRegenerating} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium rounded-xl disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25">
-                                    {isRegenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                                <button onClick={handleRegenerate} disabled={isProcessing} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium rounded-xl disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25">
+                                    {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                                     İçerik Üret
                                 </button>
                             </div>

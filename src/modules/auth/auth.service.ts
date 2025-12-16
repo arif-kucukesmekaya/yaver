@@ -1,5 +1,5 @@
 import { db } from '../../core/database';
-import { users, userProfiles, userCredits, userRoles, roles, passwordResetTokens, refreshTokens } from '../../core/database/schema';
+import { users, userProfiles, userCredits, creditTransactions, userRoles, roles, passwordResetTokens, refreshTokens } from '../../core/database/schema';
 import { hashPassword, comparePassword } from '../../shared/utils/password';
 import { generateToken, generateRefreshToken, verifyRefreshToken, generateResetToken } from '../../shared/utils/jwt';
 import { ConflictError, AuthenticationError, NotFoundError, ValidationError } from '../../shared/utils/errors';
@@ -65,6 +65,14 @@ export class AuthService {
       extraCredits: 0,
       totalEarned: 10,
       totalSpent: 0,
+    });
+
+    // ✅ FIX: Log initial credit transaction
+    await db.insert(creditTransactions).values({
+      userId: newUser.id,
+      amount: 10,
+      transactionType: 'monthly_refill',
+      description: 'Welcome bonus - Initial credits',
     });
 
     // Assign default role (Satıcı)
@@ -207,6 +215,14 @@ export class AuthService {
         extraCredits: 0,
         totalEarned: 10,
         totalSpent: 0,
+      });
+
+      // ✅ FIX: Log initial credit transaction
+      await db.insert(creditTransactions).values({
+        userId: newUser.id,
+        amount: 10,
+        transactionType: 'monthly_refill',
+        description: 'Welcome bonus - Initial credits (Google)',
       });
 
       // Assign default role (Satıcı)

@@ -22,6 +22,7 @@ import {
   errorsRoutes,
   subscriptionRoutes,
 } from './modules';
+import sseRoutes from './modules/sse/sse.routes';
 
 const app = new Hono();
 
@@ -78,6 +79,7 @@ app.route('/categories', categoriesRoutes);
 app.route('/queue', queueRoutes);
 app.route('/errors', errorsRoutes);
 app.route('/subscriptions', subscriptionRoutes);
+app.route('/sse', sseRoutes); // Real-time updates
 
 // Admin routes (protected by auth + admin middleware)
 app.route('/admin', adminRoutes);
