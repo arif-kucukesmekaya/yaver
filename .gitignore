@@ -7,3 +7,4 @@ drizzle/*.sql
 .vscode
 rules
 docs
+example-ui
