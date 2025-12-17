@@ -3,10 +3,11 @@
 import { motion, useScroll, useTransform, useMotionValue } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, Zap } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Spotlight } from '@/components/ui/spotlight';
 import { ContainerScroll } from '@/components/ui/container-scroll-animation';
+import TextType from '@/components/ui/text-type';
 
 const marketplaces = [
     { name: 'Trendyol', color: '#F27A1A' },
@@ -17,7 +18,7 @@ const marketplaces = [
 export function Hero() {
     return (
         // Adjusted height for Container Scroll which takes up a lot of space
-        <section className="relative min-h-screen flex flex-col items-center justify-start pt-20 overflow-hidden">
+        <section className="relative min-h-screen flex flex-col items-center justify-start pt-24 md:pt-32 overflow-hidden">
 
             {/* 1. SPOTLIGHT EFFECT */}
             <Spotlight
@@ -29,39 +30,45 @@ export function Hero() {
                 {/* 2. CONTAINER SCROLL with Hero Content inside Header slot */}
                 <ContainerScroll
                     titleComponent={
-                        <div className="flex flex-col items-center">
-                            {/* Headline */}
-                            <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-white mb-8 leading-[0.9] text-balance">
-                                <SplitText text="E-ticaret İçin" delay={0.1} />
-                                <br />
-                                <span className="relative inline-block mt-2">
-                                    <span
-                                        className="relative z-10 bg-gradient-to-r from-white via-indigo-200 to-white bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-flow"
-                                        style={{ animation: 'gradient-flow 3s linear infinite' }}
-                                    >
-                                        Yapay Zeka
-                                    </span>
-                                    <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-2xl opacity-30 -z-10 animate-pulse-slow" />
-                                </span>
-                                <SplitText text="Otopilotu" delay={0.4} className="text-white/40 block mt-2 font-light" />
-                            </h1>
+                        <div className="flex flex-col items-center pt-8 md:pt-12">
+                            {/* Headline - TextType Animation */}
+                            <div className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tight mb-4 md:mb-8 text-center min-h-[1.2em] relative">
+                                <TextType
+                                    text={["Yükle.", "Üret.", "Sat."]}
+                                    typingSpeed={60}
+                                    pauseDuration={1000}
+                                    deletingSpeed={30}
+                                    showCursor={true}
+                                    cursorCharacter="_"
+                                    cursorClassName="text-indigo-400"
+                                    loop={true}
+                                    textColors={[
+                                        "#ffffff",
+                                        "#c084fc",
+                                        "#34d399"
+                                    ]}
+                                    className="font-black"
+                                />
+                                {/* Glow effect behind text */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-3xl opacity-30 -z-10 scale-150" />
+                            </div>
 
                             <motion.p
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.6 }}
-                                className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-light"
+                                transition={{ duration: 0.8, delay: 0.7 }}
+                                className="text-base md:text-lg lg:text-xl text-white/50 max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed font-light text-center px-4"
                             >
-                                Ürünlerinizi saniyeler içinde analiz edin, SEO uyumlu içerikler üretin ve
-                                tüm pazaryerlerinde satışlarınızı 10x artırın.
+                                AI destekli e-ticaret içerik motoru. Başlık, açıklama ve görsel —
+                                <span className="text-white/70"> saniyeler içinde tüm pazaryerlerine hazır.</span>
                             </motion.p>
 
                             {/* CTA Buttons */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.3 }}
-                                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+                                transition={{ duration: 0.8, delay: 0.8 }}
+                                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 md:mb-24"
                             >
                                 <Link href="/register" className="group relative z-20">
                                     <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
@@ -128,311 +135,161 @@ export function Hero() {
     );
 }
 
-// Re-using the Dashboard UI logic but stripping the Tilt wrapper since ContainerScroll handles the 3D effect
+// Product Detail Page Mock - Shows AI generation workflow with chair product
 function StaticDashboardUI() {
     return (
         <div className="w-full h-full p-4 relative group overflow-hidden bg-[#0A0A0B]">
-            {/* Glow Effect behind dashboard */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl -z-10 opacity-50" />
+            {/* Glow Effect behind */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 rounded-3xl blur-2xl -z-10 opacity-50" />
 
             {/* Window Controls */}
-            <div className="h-10 border-b border-white/5 bg-white/[0.02] flex items-center px-4 gap-2 rounded-t-xl">
+            <div className="h-10 border-b border-white/5 bg-zinc-900/80 flex items-center px-4 gap-2 rounded-t-xl">
                 <div className="w-3 h-3 rounded-full bg-[#FF5F56] shadow-[0_0_6px_#FF5F56]" />
                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E] shadow-[0_0_6px_#FFBD2E]" />
                 <div className="w-3 h-3 rounded-full bg-[#27C93F] shadow-[0_0_6px_#27C93F]" />
                 <div className="ml-4 flex items-center gap-2 px-3 py-1 bg-white/5 rounded-md">
                     <div className="w-3 h-3 rounded-full bg-indigo-500/50" />
-                    <span className="text-[10px] text-white/40">app.yaverai.com</span>
-                </div>
-                <div className="ml-auto flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center">
-                        <div className="w-3 h-3 border border-white/20 rounded-sm" />
-                    </div>
+                    <span className="text-[10px] text-white/40">app.yaverai.com/products/28</span>
                 </div>
             </div>
 
-            {/* Dashboard Layout */}
-            <div className="grid grid-cols-12 gap-4 h-[calc(100%-3rem)] pt-4">
-                {/* Sidebar */}
-                <div className="col-span-2 space-y-2 bg-white/[0.02] rounded-xl p-3 border border-white/5">
-                    {/* Logo */}
-                    <div className="flex items-center gap-2 mb-4 px-2">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                            <Sparkles className="w-4 h-4 text-white" />
+            {/* Product Detail Layout */}
+            <div className="h-[calc(100%-3rem)] pt-4 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                            <span className="text-[10px] text-zinc-400">←</span>
                         </div>
-                        <span className="text-xs font-semibold text-white">Yaver AI</span>
+                        <div>
+                            <h2 className="text-sm font-bold text-white">Premium Koltuk Takımı</h2>
+                            <p className="text-[9px] text-zinc-500">Ürün Detayları</p>
+                        </div>
                     </div>
-
-                    {/* Nav items */}
-                    <div className="w-full h-9 bg-indigo-500/20 rounded-lg border border-indigo-500/30 flex items-center px-3 gap-2">
-                        <div className="w-4 h-4 rounded bg-indigo-500/50" />
-                        <span className="text-[10px] text-indigo-300">Dashboard</span>
-                    </div>
-                    {[
-                        { icon: '📦', label: 'Ürünler', active: false },
-                        { icon: '🏪', label: 'Pazaryerleri', active: false },
-                        { icon: '📊', label: 'Raporlar', active: false },
-                        { icon: '⚙️', label: 'Ayarlar', active: false },
-                    ].map((item, i) => (
-                        <div key={i} className="w-full h-9 bg-white/[0.02] hover:bg-white/[0.05] rounded-lg border border-white/5 flex items-center px-3 gap-2 transition-colors cursor-pointer">
-                            <span className="text-[10px]">{item.icon}</span>
-                            <span className="text-[10px] text-white/50">{item.label}</span>
+                    <div className="flex items-center gap-2">
+                        <div className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                            <span className="text-[10px] text-emerald-400 font-medium">Tamamlandı</span>
                         </div>
-                    ))}
-
-                    {/* Bottom CTA */}
-                    <div className="mt-auto pt-4">
-                        <div className="w-full p-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg border border-indigo-500/20">
-                            <div className="text-[9px] text-indigo-300 font-medium">Pro Plan</div>
-                            <div className="text-[8px] text-white/40">500 kredi kaldı</div>
-                            <div className="mt-2 h-1 bg-white/10 rounded-full overflow-hidden">
-                                <motion.div
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: '65%' }}
-                                    transition={{ duration: 1.5, delay: 0.5 }}
-                                />
-                            </div>
-                        </div>
+                        <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            className="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 rounded-lg shadow-lg shadow-indigo-500/20 flex items-center gap-2 cursor-pointer"
+                        >
+                            <Sparkles className="w-3 h-3 text-white" />
+                            <span className="text-[10px] text-white font-medium">Yeniden Üret</span>
+                        </motion.div>
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="col-span-10 space-y-4 overflow-hidden">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-sm font-semibold text-white">Hoş geldin, Arif 👋</h2>
-                            <p className="text-[10px] text-white/40">Bugün 12 yeni ürün eklendi</p>
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-4 gap-4 h-[calc(100%-3rem)]">
+                    {/* Left Column - AI Generated Images (narrower, 2 images) */}
+                    <div className="col-span-1 bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3 overflow-y-auto">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="p-1.5 bg-indigo-500/10 rounded-lg">
+                                <Sparkles className="w-4 h-4 text-indigo-400" />
+                            </div>
+                            <span className="text-xs font-semibold text-white">AI Görselleri</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <motion.div
-                                whileHover={{ scale: 1.02 }}
-                                className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg shadow-lg shadow-indigo-500/30 flex items-center gap-2 cursor-pointer"
-                            >
-                                <Sparkles className="w-3 h-3 text-white" />
-                                <span className="text-[10px] text-white font-medium">AI ile Oluştur</span>
-                            </motion.div>
-                        </div>
-                    </div>
 
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-4 gap-3">
-                        {[
-                            { label: 'Toplam Ürün', value: '1,247', change: '+12%', icon: '📦', color: 'indigo' },
-                            { label: 'SEO Skoru', value: '98.5', change: '+3.2', icon: '🎯', color: 'emerald' },
-                            { label: 'Aktif Pazar', value: '3', change: '', icon: '🏪', color: 'orange' },
-                            { label: 'Bu Hafta', value: '₺45.2K', change: '+28%', icon: '💰', color: 'purple' },
-                        ].map((stat, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 + i * 0.1 }}
-                                className={`h-20 bg-white/[0.03] rounded-xl border border-white/5 p-3 relative overflow-hidden group/card hover:bg-white/[0.06] transition-colors`}
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                                <div className="flex items-start justify-between">
-                                    <span className="text-lg">{stat.icon}</span>
-                                    {stat.change && (
-                                        <span className={`text-[8px] px-1.5 py-0.5 rounded-full ${stat.change.startsWith('+')
-                                                ? 'bg-emerald-500/20 text-emerald-400'
-                                                : 'bg-red-500/20 text-red-400'
-                                            }`}>
-                                            {stat.change}
+                        {/* 2 Product Images */}
+                        <div className="space-y-3">
+                            {[
+                                { type: 'YAŞAM TARZI', delay: 0.3, src: 'https://v3b.fal.media/files/b/0a86a18f/Dq03JhZwx_fzAgIFvH8dT.png' },
+                                { type: 'DETAY', delay: 0.4, src: 'https://v3b.fal.media/files/b/0a86a18f/TA_reC-PijHlp7LtalU3H.png' },
+                            ].map((img, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: img.delay }}
+                                    className="relative"
+                                >
+                                    <div className="aspect-square rounded-xl overflow-hidden bg-zinc-800 ring-2 ring-indigo-500/20 hover:ring-indigo-500/40 transition-all cursor-pointer">
+                                        <img
+                                            src={img.src}
+                                            alt={img.type}
+                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                        />
+                                    </div>
+                                    <div className="mt-1.5 flex items-center justify-center">
+                                        <span className="text-[8px] uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full font-medium">
+                                            {img.type}
                                         </span>
-                                    )}
-                                </div>
-                                <div className="mt-1">
-                                    <div className="text-lg font-bold text-white">{stat.value}</div>
-                                    <div className="text-[9px] text-white/40">{stat.label}</div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Main Content Grid */}
-                    <div className="grid grid-cols-3 gap-4 h-[calc(100%-10rem)]">
-                        {/* Product Table */}
-                        <div className="col-span-2 bg-white/[0.03] rounded-xl border border-white/5 p-4 relative overflow-hidden">
-                            <div className="flex justify-between items-center mb-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs font-medium text-white">Son Ürünler</span>
-                                    <span className="text-[9px] px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded-full">Canlı</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="px-2 py-1 bg-white/5 rounded-md text-[9px] text-white/50">Tümünü Gör</div>
-                                </div>
+                    {/* Right Column - Marketplace Listings (wider, simplified) */}
+                    <div className="col-span-3 bg-zinc-900/50 border border-zinc-800/50 rounded-xl overflow-hidden flex flex-col">
+                        <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-white">Pazaryeri İçerikleri</span>
                             </div>
-
-                            {/* Table Header */}
-                            <div className="grid grid-cols-12 gap-2 px-3 py-2 text-[9px] text-white/30 uppercase tracking-wider border-b border-white/5">
-                                <div className="col-span-5">Ürün</div>
-                                <div className="col-span-3">Pazaryeri</div>
-                                <div className="col-span-2">SEO</div>
-                                <div className="col-span-2">Durum</div>
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full">
+                                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                                <span className="text-[10px] text-blue-400 font-medium">Oluşturuluyor...</span>
                             </div>
-
-                            {/* Table Rows */}
-                            <div className="space-y-1 mt-2">
-                                {[
-                                    { name: 'Premium Bluetooth Kulaklık', marketplace: 'Trendyol', seo: 98, status: 'active' },
-                                    { name: 'Akıllı Saat Pro Max', marketplace: 'Amazon', seo: 95, status: 'active' },
-                                    { name: 'Kablosuz Şarj Cihazı', marketplace: 'Hepsiburada', seo: 92, status: 'pending' },
-                                    { name: 'USB-C Hub 7in1', marketplace: 'Trendyol', seo: 97, status: 'active' },
-                                    { name: 'Mekanik Klavye RGB', marketplace: 'Amazon', seo: 89, status: 'active' },
-                                ].map((product, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.5 + i * 0.1 }}
-                                        className="grid grid-cols-12 gap-2 px-3 py-2.5 bg-white/[0.02] hover:bg-white/[0.05] rounded-lg items-center transition-colors cursor-pointer group/row"
-                                    >
-                                        <div className="col-span-5 flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
-                                                <span className="text-[10px]">📱</span>
-                                            </div>
-                                            <span className="text-[10px] text-white/70 group-hover/row:text-white transition-colors truncate">{product.name}</span>
-                                        </div>
-                                        <div className="col-span-3">
-                                            <span className={`text-[9px] px-2 py-0.5 rounded-full ${product.marketplace === 'Trendyol' ? 'bg-orange-500/20 text-orange-300' :
-                                                    product.marketplace === 'Amazon' ? 'bg-yellow-500/20 text-yellow-300' :
-                                                        'bg-orange-400/20 text-orange-200'
-                                                }`}>
-                                                {product.marketplace}
-                                            </span>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <div className="flex items-center gap-1">
-                                                <div className="w-12 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full ${product.seo >= 95 ? 'bg-emerald-500' :
-                                                                product.seo >= 90 ? 'bg-yellow-500' : 'bg-orange-500'
-                                                            }`}
-                                                        style={{ width: `${product.seo}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-[9px] text-white/50">{product.seo}</span>
-                                            </div>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <span className={`text-[9px] flex items-center gap-1 ${product.status === 'active' ? 'text-emerald-400' : 'text-yellow-400'
-                                                }`}>
-                                                <div className={`w-1.5 h-1.5 rounded-full ${product.status === 'active' ? 'bg-emerald-400' : 'bg-yellow-400'
-                                                    } animate-pulse`} />
-                                                {product.status === 'active' ? 'Aktif' : 'Beklemede'}
-                                            </span>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-
-                            {/* Scanning Effect Overlay */}
-                            <motion.div
-                                className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/5 to-transparent pointer-events-none"
-                                animate={{ top: ['-100%', '200%'] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                            />
                         </div>
 
-                        {/* Right Panel - AI Generation */}
-                        <div className="col-span-1 space-y-3">
-                            {/* AI Panel */}
-                            <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl border border-indigo-500/20 p-3 relative overflow-hidden">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <motion.div
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                                    >
-                                        <Sparkles className="w-4 h-4 text-indigo-400" />
-                                    </motion.div>
-                                    <span className="text-[10px] font-medium text-white">AI Asistan</span>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <div className="p-2 bg-white/5 rounded-lg">
-                                        <div className="text-[9px] text-white/60 mb-1">Son işlem</div>
-                                        <div className="text-[10px] text-white">12 ürün optimize edildi ✓</div>
+                        {/* Marketplace Cards - Simple: Logo + Name + Generating */}
+                        <div className="p-4 space-y-4 flex-1">
+                            {[
+                                { name: 'Amazon', logo: '/logo/amazon.png', color: 'amber' },
+                                { name: 'Trendyol', logo: '/logo/trendyol.png', color: 'orange' },
+                                { name: 'Hepsiburada', logo: '/logo/hepsiburada.png', color: 'orange' },
+                            ].map((listing, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.4 + i * 0.15 }}
+                                    className="flex items-center justify-between p-4 bg-zinc-800/40 border border-zinc-700/50 rounded-2xl hover:bg-zinc-800/60 transition-all"
+                                >
+                                    {/* Left: Logo + Name */}
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-xl bg-white p-0 flex items-center justify-center overflow-hidden shadow-lg">
+                                            <img src={listing.logo} alt={listing.name} className="w-full h-full object-contain" />
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold text-white">{listing.name}</p>
+                                            <p className="text-xs text-zinc-500">Pazaryeri Listesi</p>
+                                        </div>
                                     </div>
 
-                                    <motion.div
-                                        className="flex items-center gap-2 p-2 bg-indigo-500/20 rounded-lg border border-indigo-500/30"
-                                        animate={{ opacity: [0.7, 1, 0.7] }}
-                                        transition={{ duration: 2, repeat: Infinity }}
-                                    >
-                                        <div className="flex gap-0.5">
-                                            {[0, 1, 2].map((i) => (
-                                                <motion.div
-                                                    key={i}
-                                                    animate={{ scaleY: [1, 1.5, 1] }}
-                                                    transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
-                                                    className="w-0.5 h-3 bg-indigo-400 rounded-full"
-                                                />
-                                            ))}
-                                        </div>
-                                        <span className="text-[9px] text-indigo-300">Analiz ediliyor...</span>
-                                    </motion.div>
-                                </div>
-
-                                {/* Glow effect */}
-                                <div className="absolute -top-10 -right-10 w-20 h-20 bg-indigo-500/20 rounded-full blur-2xl" />
-                            </div>
-
-                            {/* Quick Stats */}
-                            <div className="bg-white/[0.03] rounded-xl border border-white/5 p-3">
-                                <div className="text-[10px] text-white/40 mb-2">Bugünkü Performans</div>
-                                <div className="space-y-2">
-                                    {[
-                                        { label: 'İçerik Üretimi', value: '24', unit: 'ürün' },
-                                        { label: 'Ortalama SEO', value: '96.2', unit: 'puan' },
-                                        { label: 'Tasarruf', value: '4.5', unit: 'saat' },
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-center justify-between">
-                                            <span className="text-[9px] text-white/50">{item.label}</span>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-xs font-bold text-white">{item.value}</span>
-                                                <span className="text-[8px] text-white/30">{item.unit}</span>
+                                    {/* Right: Generating Indicator */}
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl">
+                                            <div className="relative w-5 h-5">
+                                                <div className="absolute inset-0 rounded-full border-2 border-indigo-500/30" />
+                                                <div className="absolute inset-0 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
                                             </div>
+                                            <span className="text-sm text-indigo-400 font-medium">Oluşturuluyor</span>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Marketplace Status */}
-                            <div className="bg-white/[0.03] rounded-xl border border-white/5 p-3">
-                                <div className="text-[10px] text-white/40 mb-2">Pazaryeri Durumu</div>
-                                <div className="space-y-2">
-                                    {[
-                                        { name: 'Trendyol', status: 'connected', color: 'orange' },
-                                        { name: 'Amazon', status: 'connected', color: 'yellow' },
-                                        { name: 'Hepsiburada', status: 'syncing', color: 'orange' },
-                                    ].map((mp, i) => (
-                                        <div key={i} className="flex items-center justify-between p-1.5 bg-white/[0.02] rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${mp.status === 'connected' ? 'bg-emerald-400' : 'bg-yellow-400 animate-pulse'
-                                                    }`} />
-                                                <span className="text-[9px] text-white/70">{mp.name}</span>
-                                            </div>
-                                            <span className={`text-[8px] ${mp.status === 'connected' ? 'text-emerald-400' : 'text-yellow-400'
-                                                }`}>
-                                                {mp.status === 'connected' ? '✓' : '⟳'}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                                    </div>
+                                </motion.div>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Floating Badge (SEO Score) */}
+            {/* Floating Badge (SEO Score) - Top Right */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.9, x: 20 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="absolute top-16 right-8 p-3 bg-black/80 backdrop-blur-xl rounded-xl border border-emerald-500/30 shadow-xl shadow-emerald-500/10 flex items-center gap-3"
+                initial={{ opacity: 0, scale: 0.9, y: -20 }}
+                animate={{
+                    opacity: 1,
+                    scale: 1,
+                    y: [0, -8, 0],
+                }}
+                transition={{
+                    delay: 1,
+                    duration: 0.5,
+                    y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className="absolute top-20 right-8 p-3 bg-black/90 backdrop-blur-xl rounded-xl border border-emerald-500/30 shadow-xl shadow-emerald-500/20 flex items-center gap-3 z-20"
             >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
                     <span className="text-white font-bold text-sm">A+</span>
@@ -443,12 +300,21 @@ function StaticDashboardUI() {
                 </div>
             </motion.div>
 
-            {/* Floating Speed Badge */}
+            {/* Floating Speed Badge - Bottom Right */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.9, x: -20 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                transition={{ delay: 1.2, duration: 0.5 }}
-                className="absolute bottom-20 left-8 p-3 bg-black/80 backdrop-blur-xl rounded-xl border border-amber-500/30 shadow-xl shadow-amber-500/10 flex items-center gap-3"
+                initial={{ opacity: 0, scale: 0.9, x: 20 }}
+                animate={{
+                    opacity: 1,
+                    scale: 1,
+                    x: 0,
+                    y: [0, 6, 0],
+                }}
+                transition={{
+                    delay: 1.2,
+                    duration: 0.5,
+                    y: { duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
+                }}
+                className="absolute bottom-24 right-8 p-3 bg-black/90 backdrop-blur-xl rounded-xl border border-amber-500/30 shadow-xl shadow-amber-500/20 flex items-center gap-3 z-20"
             >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
                     <Zap className="w-5 h-5 text-white" />
@@ -458,9 +324,36 @@ function StaticDashboardUI() {
                     <div className="text-lg font-bold text-amber-400">0.4s</div>
                 </div>
             </motion.div>
+
+            {/* Floating AI Badge - Left Side */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9, x: -20 }}
+                animate={{
+                    opacity: 1,
+                    scale: 1,
+                    x: 0,
+                    y: [0, -6, 0],
+                }}
+                transition={{
+                    delay: 1.4,
+                    duration: 0.5,
+                    y: { duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 1 }
+                }}
+                className="absolute top-1/2 left-8 -translate-y-1/2 p-3 bg-black/90 backdrop-blur-xl rounded-xl border border-violet-500/30 shadow-xl shadow-violet-500/20 flex items-center gap-3 z-20"
+            >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+                    <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                    <div className="text-[9px] text-white/50">AI Üretim</div>
+                    <div className="text-lg font-bold text-violet-400">3 Pazar</div>
+                </div>
+            </motion.div>
         </div>
     );
 }
+
+
 
 function HeroDashboard() {
     // Advanced 3D Tilt Effect based on mouse position

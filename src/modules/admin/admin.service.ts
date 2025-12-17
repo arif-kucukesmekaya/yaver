@@ -28,14 +28,15 @@ export class AdminService {
      * Check if user has admin role
      */
     static async isAdmin(userId: number): Promise<boolean> {
-        const adminRole = await db.query.userRoles.findFirst({
+        // Get all roles for user and check if any is Admin
+        const userRolesList = await db.query.userRoles.findMany({
             where: eq(userRoles.userId, userId),
             with: {
                 role: true,
             },
         });
 
-        return adminRole?.role?.roleName === 'Admin';
+        return userRolesList.some(ur => ur.role?.roleName === 'Admin');
     }
 
     /**

@@ -304,25 +304,31 @@ export default function ProductDetailPage() {
                             </div>
                         ) : product.enhancedImages && product.enhancedImages.length > 0 ? (
                             <div className="grid grid-cols-1 gap-3">
-                                {product.enhancedImages.map((img, i) => (
-                                    <div
-                                        key={i}
-                                        className="group relative cursor-pointer"
-                                        onClick={() => setSelectedImage(img)}
-                                    >
-                                        <div className="aspect-square rounded-xl overflow-hidden bg-white/5 ring-2 ring-transparent hover:ring-indigo-500/50 transition-all">
-                                            <img src={img.imageUrl} alt={img.imageType} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                                <ZoomIn className="w-8 h-8 text-white" />
+                                {/* Sort images: lifestyle first, then detail, then infographic */}
+                                {[...product.enhancedImages]
+                                    .sort((a, b) => {
+                                        const order = { lifestyle: 0, detail: 1, infographic: 2 };
+                                        return (order[a.imageType as keyof typeof order] ?? 99) - (order[b.imageType as keyof typeof order] ?? 99);
+                                    })
+                                    .map((img, i) => (
+                                        <div
+                                            key={i}
+                                            className="group relative cursor-pointer"
+                                            onClick={() => setSelectedImage(img)}
+                                        >
+                                            <div className="aspect-square rounded-xl overflow-hidden bg-white/5 ring-2 ring-transparent hover:ring-indigo-500/50 transition-all">
+                                                <img src={img.imageUrl} alt={img.imageType} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                    <ZoomIn className="w-8 h-8 text-white" />
+                                                </div>
+                                            </div>
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <span className="text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full">
+                                                    {imageTypeLabels[img.imageType] || img.imageType}
+                                                </span>
                                             </div>
                                         </div>
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <span className="text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full">
-                                                {imageTypeLabels[img.imageType] || img.imageType}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         ) : (
                             <div className="py-8 border border-dashed border-white/10 rounded-xl text-center">
@@ -358,7 +364,7 @@ export default function ProductDetailPage() {
                                             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8881';
                                             const token = localStorage.getItem('accessToken');
                                             await Promise.all(
-                                                product.listings
+                                                (product.listings || [])
                                                     .filter(l => l.listingStatus === 'draft')
                                                     .map(l =>
                                                         fetch(`${API_URL}/products/${product.id}/listings/${l.marketplace?.id}`, {

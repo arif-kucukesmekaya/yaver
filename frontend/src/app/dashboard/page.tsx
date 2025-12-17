@@ -26,13 +26,11 @@ import {
     CreditCard,
     Settings,
     ArrowUpRight,
-    Eye,
-    Copy,
-    MoreHorizontal,
-    ShoppingBag,
     RefreshCw,
     AlertTriangle,
     Store,
+    Eye,
+    MoreHorizontal,
 } from 'lucide-react';
 import type { Product, CreditTransaction, ProductStatus } from '@/types';
 
@@ -75,56 +73,64 @@ export default function DashboardPage() {
     const activeListings = (pagination as any).totalPublished || 0;
 
     return (
-        <div className="space-y-8">
-            {/* Welcome Header */}
+        <div className="space-y-6">
+            {/* Welcome Header - Premium Design */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+                className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900/80 via-zinc-900/50 to-zinc-900/80 border border-zinc-800/50 p-6"
             >
-                <div className="flex items-center gap-4">
-                    <div className="hidden md:block">
-                        <Image
-                            src="/yaver-logo.png"
-                            alt="Yaver"
-                            width={48}
-                            height={48}
-                            className="rounded-xl"
-                        />
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 text-sm mb-0.5">{getGreeting()}</p>
-                        <h1 className="text-2xl md:text-3xl font-bold text-white">
-                            {user?.firstName || 'Kullanıcı'}
-                        </h1>
-                    </div>
-                </div>
+                {/* Background effects */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/5 to-transparent rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-violet-500/5 to-transparent rounded-full blur-3xl" />
 
-                <div className="flex items-center gap-3">
-                    <Link href="/dashboard/products">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-sm rounded-xl transition-colors border border-zinc-700"
-                        >
-                            <Package className="w-4 h-4" />
-                            Ürünleri Gör
-                        </motion.button>
-                    </Link>
-                    <Link href="/dashboard/products/new">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-medium text-sm rounded-xl transition-colors shadow-lg shadow-blue-500/20"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Yeni Ürün
-                        </motion.button>
-                    </Link>
+                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-violet-600 rounded-2xl blur-lg opacity-40" />
+                            <Image
+                                src="/yaver-logo.png"
+                                alt="Yaver"
+                                width={56}
+                                height={56}
+                                className="relative rounded-2xl shadow-xl"
+                            />
+                        </div>
+                        <div>
+                            <p className="text-zinc-500 text-sm mb-0.5">{getGreeting()}</p>
+                            <h1 className="text-2xl md:text-3xl font-bold text-white">
+                                {user?.firstName || 'Kullanıcı'}
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <Link href="/dashboard/products">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800/80 hover:bg-zinc-700/80 text-white text-sm rounded-xl transition-all border border-zinc-700/50 backdrop-blur-sm"
+                            >
+                                <Package className="w-4 h-4" />
+                                Ürünleri Gör
+                            </motion.button>
+                        </Link>
+                        <Link href="/dashboard/products/new">
+                            <motion.button
+                                whileHover={{ scale: 1.02, y: -1 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="relative flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-blue-500/25 overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer" />
+                                <Plus className="w-4 h-4" />
+                                <span className="relative">Yeni Ürün</span>
+                            </motion.button>
+                        </Link>
+                    </div>
                 </div>
             </motion.div>
 
-            {/* Stats Grid */}
+            {/* Stats Grid - Modern Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {isLoading ? (
                     <>
@@ -166,35 +172,36 @@ export default function DashboardPage() {
                 )}
             </div>
 
-            {/* Connected Marketplaces */}
+            {/* Connected Marketplaces - Redesigned */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-5"
+                className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 backdrop-blur-sm"
             >
                 <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2.5">
-                        <div className="p-2 bg-violet-500/10 rounded-xl">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-violet-500/10 rounded-xl border border-violet-500/20">
                             <Store className="w-4 h-4 text-violet-400" />
                         </div>
-                        <h2 className="font-semibold text-white">Bağlı Pazaryerleri</h2>
+                        <div>
+                            <h2 className="font-semibold text-white">Bağlı Pazaryerleri</h2>
+                            <p className="text-xs text-zinc-500">{marketplaces.length} aktif entegrasyon</p>
+                        </div>
                     </div>
-                    <span className="text-xs text-zinc-500">{marketplaces.length} pazaryeri</span>
                 </div>
 
                 {marketplacesLoading ? (
                     <div className="flex gap-3">
                         {[...Array(4)].map((_, i) => (
-                            <div key={i} className="w-16 h-16 rounded-xl bg-zinc-800 animate-pulse" />
+                            <div key={i} className="w-20 h-20 rounded-xl bg-zinc-800/50 animate-pulse" />
                         ))}
                     </div>
                 ) : marketplaces.length === 0 ? (
                     <p className="text-zinc-500 text-sm">Henüz pazaryeri bağlı değil</p>
                 ) : (
                     <div className="flex flex-wrap gap-3">
-                        {marketplaces.map((mp) => {
-                            // Check for local logo mapping first
+                        {marketplaces.map((mp, index) => {
                             const logoSrc =
                                 (mp.name.toLowerCase().includes('amazon') && '/logo/amazon.png') ||
                                 (mp.name.toLowerCase().includes('hepsiburada') && '/logo/hepsiburada.png') ||
@@ -204,11 +211,14 @@ export default function DashboardPage() {
                             return (
                                 <motion.div
                                     key={mp.id}
-                                    whileHover={{ scale: 1.05 }}
-                                    className="flex flex-col items-center gap-2 p-3 bg-zinc-800/50 rounded-xl border border-zinc-700/50 hover:border-zinc-600 transition-colors cursor-pointer"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    whileHover={{ scale: 1.05, y: -2 }}
+                                    className="flex flex-col items-center gap-2.5 p-4 bg-zinc-800/30 rounded-xl border border-zinc-700/30 hover:border-zinc-600/50 hover:bg-zinc-800/50 transition-all cursor-pointer group"
                                 >
                                     {logoSrc ? (
-                                        <div className="w-10 h-10 rounded-lg bg-white p-1 flex items-center justify-center overflow-hidden">
+                                        <div className="w-12 h-12 rounded-xl bg-white p-1.5 flex items-center justify-center overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow">
                                             <img
                                                 src={logoSrc}
                                                 alt={mp.name}
@@ -216,8 +226,8 @@ export default function DashboardPage() {
                                             />
                                         </div>
                                     ) : (
-                                        <div className="w-10 h-10 rounded-lg bg-zinc-700 flex items-center justify-center">
-                                            <ShoppingBag className="w-5 h-5 text-zinc-400" />
+                                        <div className="w-12 h-12 rounded-xl bg-zinc-700 flex items-center justify-center">
+                                            <Store className="w-6 h-6 text-zinc-400" />
                                         </div>
                                     )}
                                     <span className="text-xs text-zinc-300 font-medium">{mp.name}</span>
@@ -235,31 +245,31 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="lg:col-span-2 bg-zinc-900/50 border border-zinc-800/80 rounded-2xl overflow-hidden"
+                    className="lg:col-span-2 bg-gradient-to-br from-zinc-900/80 to-zinc-900/50 border border-zinc-800/50 rounded-2xl overflow-hidden backdrop-blur-sm"
                 >
-                    <div className="p-5 border-b border-zinc-800/50 flex items-center justify-between">
+                    <div className="p-5 border-b border-zinc-800/30 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-500/10 rounded-xl">
+                            <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
                                 <Package className="w-5 h-5 text-blue-400" />
                             </div>
                             <div>
                                 <h2 className="font-semibold text-white">Son Ürünler</h2>
-                                <p className="text-xs text-zinc-500">{pagination.total} toplam</p>
+                                <p className="text-xs text-zinc-500">{pagination.total} toplam ürün</p>
                             </div>
                         </div>
                         <Link
                             href="/dashboard/products"
-                            className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-zinc-800"
+                            className="group flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-800/50"
                         >
                             Tümü
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                     </div>
 
                     {productsLoading ? (
                         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             {[...Array(4)].map((_, i) => (
-                                <div key={i} className="h-40 bg-zinc-800/50 rounded-xl animate-pulse" />
+                                <div key={i} className="h-44 bg-zinc-800/30 rounded-xl animate-pulse" />
                             ))}
                         </div>
                     ) : products.length === 0 ? (
@@ -279,16 +289,16 @@ export default function DashboardPage() {
                 </motion.div>
 
                 {/* Right Sidebar (1/3) */}
-                <div className="space-y-6">
-                    {/* Queue Status */}
+                <div className="space-y-5">
+                    {/* Queue Status - Redesigned */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.15 }}
-                        className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-5"
+                        className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 backdrop-blur-sm"
                     >
-                        <div className="flex items-center gap-2.5 mb-4">
-                            <div className="p-2 bg-blue-500/10 rounded-xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
                                 <RefreshCw className="w-4 h-4 text-blue-400" />
                             </div>
                             <h3 className="font-semibold text-white text-sm">İşleme Durumu</h3>
@@ -297,7 +307,7 @@ export default function DashboardPage() {
                         {queueLoading ? (
                             <div className="space-y-2">
                                 {[...Array(3)].map((_, i) => (
-                                    <div key={i} className="h-8 bg-zinc-800 rounded-lg animate-pulse" />
+                                    <div key={i} className="h-10 bg-zinc-800/50 rounded-lg animate-pulse" />
                                 ))}
                             </div>
                         ) : (
@@ -318,28 +328,28 @@ export default function DashboardPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="bg-red-500/5 border border-red-500/20 rounded-2xl p-5"
+                            className="bg-gradient-to-br from-red-500/5 to-red-500/0 border border-red-500/20 rounded-2xl p-5"
                         >
                             <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="p-2 bg-red-500/10 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-red-500/10 rounded-xl border border-red-500/20">
                                         <AlertTriangle className="w-4 h-4 text-red-400" />
                                     </div>
                                     <h3 className="font-semibold text-white text-sm">Hatalar</h3>
                                 </div>
-                                <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs font-bold rounded-full">
+                                <span className="px-2.5 py-1 bg-red-500/20 text-red-400 text-xs font-bold rounded-full">
                                     {errorStats.unresolved}
                                 </span>
                             </div>
 
                             {errorsLoading ? (
                                 <div className="space-y-2">
-                                    <div className="h-12 bg-zinc-800/50 rounded-lg animate-pulse" />
+                                    <div className="h-14 bg-zinc-800/30 rounded-lg animate-pulse" />
                                 </div>
                             ) : (
                                 <div className="space-y-2">
                                     {errors.slice(0, 3).map((err) => (
-                                        <div key={err.id} className="p-2.5 bg-zinc-900/50 rounded-lg">
+                                        <div key={err.id} className="p-3 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
                                             <p className="text-xs text-red-400 font-medium truncate">
                                                 {err.errorType}
                                             </p>
@@ -353,18 +363,18 @@ export default function DashboardPage() {
                         </motion.div>
                     )}
 
-                    {/* Quick Actions */}
+                    {/* Quick Actions - Premium Design */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.25 }}
-                        className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4"
+                        className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/50 border border-zinc-800/50 rounded-2xl p-4 backdrop-blur-sm"
                     >
-                        <h3 className="font-medium text-white text-sm mb-3 flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-3">
                             <Zap className="w-4 h-4 text-amber-400" />
-                            Hızlı İşlemler
-                        </h3>
-                        <div className="space-y-2">
+                            <h3 className="font-medium text-white text-sm">Hızlı İşlemler</h3>
+                        </div>
+                        <div className="space-y-1.5">
                             <QuickActionCompact title="Yeni Ürün" href="/dashboard/products/new" icon={Plus} color="blue" />
                             <QuickActionCompact title="Kredi Al" href="/dashboard/credits" icon={CreditCard} color="amber" />
                             <QuickActionCompact title="Ayarlar" href="/dashboard/settings" icon={Settings} color="zinc" />
@@ -376,11 +386,11 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl overflow-hidden"
+                        className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/50 border border-zinc-800/50 rounded-2xl overflow-hidden backdrop-blur-sm"
                     >
-                        <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between">
+                        <div className="p-4 border-b border-zinc-800/30 flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
-                                <div className="p-1.5 bg-amber-500/10 rounded-lg">
+                                <div className="p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/20">
                                     <Coins className="w-4 h-4 text-amber-400" />
                                 </div>
                                 <h2 className="font-medium text-white text-sm">Son İşlemler</h2>
@@ -390,15 +400,15 @@ export default function DashboardPage() {
                             </Link>
                         </div>
 
-                        <div className="divide-y divide-zinc-800/50">
+                        <div className="divide-y divide-zinc-800/30">
                             {historyLoading ? (
                                 [...Array(3)].map((_, i) => (
                                     <div key={i} className="px-4 py-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-zinc-800 animate-pulse" />
+                                            <div className="w-9 h-9 rounded-lg bg-zinc-800/50 animate-pulse" />
                                             <div className="flex-1">
-                                                <div className="h-3 w-16 bg-zinc-800 rounded animate-pulse mb-1.5" />
-                                                <div className="h-2.5 w-24 bg-zinc-800/50 rounded animate-pulse" />
+                                                <div className="h-3 w-16 bg-zinc-800/50 rounded animate-pulse mb-1.5" />
+                                                <div className="h-2.5 w-24 bg-zinc-800/30 rounded animate-pulse" />
                                             </div>
                                         </div>
                                     </div>
@@ -422,16 +432,16 @@ export default function DashboardPage() {
 
 function QueueStat({ label, value, color }: { label: string; value: number; color: 'amber' | 'blue' | 'emerald' | 'red' }) {
     const colors = {
-        amber: 'bg-amber-500/10 text-amber-400',
-        blue: 'bg-blue-500/10 text-blue-400',
-        emerald: 'bg-emerald-500/10 text-emerald-400',
-        red: 'bg-red-500/10 text-red-400',
+        amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+        emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        red: 'bg-red-500/10 text-red-400 border-red-500/20',
     };
 
     return (
-        <div className="flex items-center justify-between p-2.5 bg-zinc-800/30 rounded-lg">
-            <span className="text-xs text-zinc-400">{label}</span>
-            <span className={cn('px-2 py-0.5 rounded-md text-xs font-bold', colors[color])}>
+        <div className="flex items-center justify-between p-3 bg-zinc-800/20 rounded-xl border border-zinc-800/30">
+            <span className="text-xs text-zinc-400 font-medium">{label}</span>
+            <span className={cn('px-2.5 py-1 rounded-lg text-xs font-bold border', colors[color])}>
                 {value}
             </span>
         </div>
@@ -442,58 +452,72 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     const status = statusConfig[product.productStatus];
     const StatusIcon = status.icon;
 
+    // Prioritize AI-generated image, fall back to source image
+    const displayImage = product.listings?.[0]?.generatedImageUrl || product.sourceImages?.[0]?.imageUrl;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.08 }}
-            whileHover={{ y: -2 }}
+            whileHover={{ y: -3 }}
             className="group"
         >
             <Link
                 href={`/dashboard/products/${product.id}`}
                 className={cn(
-                    "block bg-zinc-800/30 rounded-xl overflow-hidden transition-all",
-                    "border border-zinc-800/80 hover:border-zinc-700",
-                    "hover:shadow-lg hover:shadow-black/20"
+                    "block bg-zinc-800/20 rounded-xl overflow-hidden transition-all",
+                    "border border-zinc-800/50 hover:border-zinc-700/50",
+                    "hover:shadow-xl hover:shadow-black/20 hover:bg-zinc-800/30"
                 )}
             >
-                <div className="relative aspect-[16/9] bg-zinc-800 overflow-hidden">
-                    {getImageUrl(product.sourceImages?.[0]?.imageUrl) ? (
+                <div className="relative aspect-[16/9] bg-zinc-900 overflow-hidden">
+                    {getImageUrl(displayImage) ? (
                         <img
-                            src={getImageUrl(product.sourceImages?.[0]?.imageUrl)}
+                            src={getImageUrl(displayImage)}
                             alt={product.brandName || 'Product'}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-8 h-8 text-zinc-700" />
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900">
+                            <Package className="w-10 h-10 text-zinc-700" />
                         </div>
                     )}
 
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
                     <div className={cn(
-                        'absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium backdrop-blur-md border',
+                        'absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md border',
                         status.bg, status.color, status.border
                     )}>
-                        <StatusIcon className={cn('w-2.5 h-2.5', product.productStatus === 'processing' && 'animate-spin')} />
+                        <StatusIcon className={cn('w-3 h-3', product.productStatus === 'processing' && 'animate-spin')} />
                         {status.label}
                     </div>
+
+                    {/* AI Badge */}
+                    {product.listings && product.listings.length > 0 && (
+                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-500/20 text-violet-300 border border-violet-500/30 text-[10px] font-semibold backdrop-blur-md">
+                            <Sparkles className="w-3 h-3" />
+                            AI
+                        </div>
+                    )}
                 </div>
 
-                <div className="p-3">
-                    <h3 className="font-medium text-white text-sm truncate group-hover:text-blue-400 transition-colors">
+                <div className="p-4">
+                    <h3 className="font-semibold text-white text-sm truncate group-hover:text-blue-400 transition-colors">
                         {product.brandName || 'İsimsiz Ürün'}
                     </h3>
                     <div className="flex items-center justify-between mt-2">
                         {product.listings && product.listings.length > 0 ? (
-                            <div className="flex items-center gap-1 text-violet-400">
-                                <Sparkles className="w-3 h-3" />
-                                <span className="text-[10px] font-medium">{product.listings.length} liste</span>
+                            <div className="flex items-center gap-1.5 text-violet-400">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span className="text-[11px] font-medium">{product.listings.length} liste</span>
                             </div>
                         ) : (
-                            <span className="text-[10px] text-zinc-600">Liste yok</span>
+                            <span className="text-[11px] text-zinc-600">Liste yok</span>
                         )}
-                        <span className="text-[10px] text-zinc-600">
+                        <span className="text-[11px] text-zinc-600">
                             {new Date(product.createdAt).toLocaleDateString('tr-TR')}
                         </span>
                     </div>
@@ -517,13 +541,15 @@ function TransactionRowCompact({ transaction, index }: { transaction: CreditTran
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: index * 0.05 }}
-            className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/30 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/20 transition-colors"
         >
             <div className={cn(
-                'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
-                isPositive ? 'bg-emerald-500/10' : 'bg-zinc-800'
+                'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border',
+                isPositive
+                    ? 'bg-emerald-500/10 border-emerald-500/20'
+                    : 'bg-zinc-800/50 border-zinc-700/50'
             )}>
-                <Coins className={cn('w-3.5 h-3.5', isPositive ? 'text-emerald-400' : 'text-zinc-500')} />
+                <Coins className={cn('w-4 h-4', isPositive ? 'text-emerald-400' : 'text-zinc-500')} />
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-white truncate">
@@ -552,22 +578,22 @@ function QuickActionCompact({
     color: 'blue' | 'amber' | 'zinc';
 }) {
     const colorClasses = {
-        blue: 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20',
-        amber: 'bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20',
-        zinc: 'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700',
+        blue: 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 border-blue-500/20',
+        amber: 'bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 border-amber-500/20',
+        zinc: 'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700 border-zinc-700/50',
     };
 
     return (
         <Link href={href}>
-            <div className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/50 transition-colors">
+            <div className="group flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-800/30 transition-all">
                 <div className={cn(
-                    'w-9 h-9 rounded-lg flex items-center justify-center transition-colors',
+                    'w-10 h-10 rounded-xl flex items-center justify-center transition-all border',
                     colorClasses[color]
                 )}>
                     <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-sm text-zinc-300 group-hover:text-white transition-colors">{title}</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="text-sm text-zinc-300 group-hover:text-white transition-colors font-medium">{title}</span>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 ml-auto opacity-0 group-hover:opacity-100 transition-all" />
             </div>
         </Link>
     );
@@ -586,7 +612,7 @@ function EmptyState({
 }) {
     return (
         <div className="p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-800 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center">
                 <Icon className="w-8 h-8 text-zinc-600" />
             </div>
             <h3 className="text-white font-medium mb-1">{title}</h3>
@@ -595,7 +621,7 @@ function EmptyState({
                 <Link href={action.href}>
                     <motion.button
                         whileHover={{ scale: 1.02 }}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-blue-500/25"
                     >
                         <Plus className="w-4 h-4" />
                         {action.label}
