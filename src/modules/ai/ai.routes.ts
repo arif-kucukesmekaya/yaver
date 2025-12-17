@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
 import { authMiddleware } from '../../core/middleware/auth';
 import { openAIService } from './openai.service';
 import { CreditService } from '../credits/credit.service';
@@ -8,17 +7,12 @@ import { db } from '../../core/database';
 import { products, marketplaceListings, categories, marketplaceConfigs } from '../../core/database/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { NotFoundError } from '../../shared/utils/errors';
+import { generateContentSchema, previewContentSchema } from './ai.schema';
 
 const aiRoutes = new Hono();
 
 // Apply auth middleware
 aiRoutes.use('*', authMiddleware);
-
-// Validation schema
-const generateContentSchema = z.object({
-  productId: z.number().int().positive(),
-  marketplaceIds: z.array(z.number().int().positive()).min(1),
-});
 
 /**
  * Calculate total credit cost based on marketplace configs
@@ -160,12 +154,7 @@ aiRoutes.post('/generate-content', zValidator('json', generateContentSchema), as
 });
 
 // POST /ai/preview - Preview content without spending credits
-aiRoutes.post('/preview', zValidator('json', z.object({
-  rawUserPrompt: z.string().min(10),
-  brandName: z.string().optional(),
-  categoryId: z.number().int().positive().optional(),
-  marketplaceId: z.number().int().positive(),
-})), async (c) => {
+aiRoutes.post('/preview', zValidator('json', previewContentSchema), async (c) => {
   const { rawUserPrompt, brandName, categoryId, marketplaceId } = c.req.valid('json');
 
   let categoryName: string | undefined;

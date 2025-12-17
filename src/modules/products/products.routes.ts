@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
 import { db } from '../../core/database';
 import {
   products,
@@ -15,34 +14,12 @@ import { NotFoundError, ValidationError } from '../../shared/utils/errors';
 import { eq, and, desc, count, sql } from 'drizzle-orm';
 import { AIService } from '../ai/ai.service';
 import { imageProcessingQueue } from '../../core/database/schema';
+import { createProductSchema, updateProductSchema, querySchema, updateListingSchema } from './products.schema';
 
 const productRoutes = new Hono();
 
 // Apply auth middleware to all routes
 productRoutes.use('*', authMiddleware);
-
-// Validation schemas
-const createProductSchema = z.object({
-  brandName: z.string().min(2).max(255).optional(),
-  categoryId: z.number().int().positive().optional(),
-  rawUserPrompt: z.string().min(10).max(5000),
-  marketplaceIds: z.array(z.number().int().positive()).optional(),
-  imageUrl: z.string().url('Invalid image URL format').max(512).optional(),
-  // 🔥 NEW: Accept base64 image data from frontend
-  imageBase64: z.string().optional(),
-});
-
-const updateProductSchema = z.object({
-  brandName: z.string().min(2).max(255).optional(),
-  categoryId: z.number().int().positive().optional(),
-  rawUserPrompt: z.string().min(10).max(5000).optional(),
-  productStatus: z.enum(['draft', 'processing', 'completed', 'failed']).optional(),
-});
-
-const querySchema = z.object({
-  page: z.string().optional().transform(val => val ? parseInt(val) : 1),
-  limit: z.string().optional().transform(val => val ? Math.min(50, parseInt(val)) : 10),
-});
 
 // GET /products - List user's products
 productRoutes.get('/', zValidator('query', querySchema), async (c) => {
@@ -391,12 +368,6 @@ productRoutes.get('/:id/listings', async (c) => {
 });
 
 // PATCH /products/:id/listings/:marketplaceId - Edit a listing
-const updateListingSchema = z.object({
-  generatedTitle: z.string().min(5).max(500).optional(),
-  generatedDescription: z.string().min(10).max(10000).optional(),
-  listingStatus: z.enum(['draft', 'published', 'error']).optional(),
-});
-
 productRoutes.patch('/:id/listings/:marketplaceId', zValidator('json', updateListingSchema), async (c) => {
   const user = c.get('user');
   const productId = parseInt(c.req.param('id'));

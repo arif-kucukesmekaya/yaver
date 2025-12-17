@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { authMiddleware } from '../../core/middleware/auth';
 import { CreditService } from './credit.service';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
+import { purchaseCreditsSchema } from './credits.schema';
 
 const creditsRoutes = new Hono();
 
@@ -36,10 +36,7 @@ creditsRoutes.get('/history', async (c) => {
 });
 
 // POST /credits/purchase - Purchase credits (placeholder)
-creditsRoutes.post('/purchase', zValidator('json', z.object({
-  amount: z.number().int().positive().min(1).max(1000),
-  paymentMethod: z.enum(['credit_card', 'paypal', 'stripe']).optional(),
-})), async (c) => {
+creditsRoutes.post('/purchase', zValidator('json', purchaseCreditsSchema), async (c) => {
   const user = c.get('user');
   const { amount } = c.req.valid('json');
 

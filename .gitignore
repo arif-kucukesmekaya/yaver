@@ -6,3 +6,4 @@ dist
 drizzle/*.sql
 .vscode
 rules
+docs
