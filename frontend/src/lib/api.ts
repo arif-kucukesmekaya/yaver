@@ -192,6 +192,7 @@ export const productsApi = {
         rawUserPrompt: string;
         marketplaceIds?: number[];
         imageUrl?: string;
+        imageBase64?: string; // 🔥 NEW: Base64 encoded image
     }) => api.post<unknown>('/products', data),
 
     update: (id: number, data: unknown) => api.patch<unknown>(`/products/${id}`, data),

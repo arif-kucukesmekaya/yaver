@@ -6,7 +6,7 @@ import OpenAI from "openai";
 
 // 🔑 Configure FAL AI
 fal.config({
-    credentials: process.env['FAL_KEY'] || 'mock-key',
+    credentials: process.env['FAL_KEY'] || 'mock-key'
 });
 
 const openai = new OpenAI({
@@ -19,7 +19,7 @@ export class AIService {
 
     /**
      * ⚡ ENHANCED: Generate SEO optimized listing for specific marketplace using GPT-4o-mini (FASTER)
-     * - Amazon: English with SEO optimization
+     * - Amazon: English with SEO optimization with emojis
      * - Trendyol/Hepsiburada: Turkish with emojis
      * - Longer, more detailed descriptions
      */
@@ -28,7 +28,7 @@ export class AIService {
         const language = isAmazon ? 'English' : 'Turkish';
 
         const prompt = `
-You are an elite e-commerce copywriter specializing in ${marketplaceName}.
+You are an elite, expert e-commerce copywriter specializing in ${marketplaceName}.
 
 Product Details:
 - Brand: ${product.brandName || 'Generic'}
@@ -111,22 +111,18 @@ Output ONLY valid JSON (no markdown, no code blocks):
 
         // Construct style-specific prompts
         let stylePrompt = "";
-        let strength = 0.5; // For image-to-image
 
         if (useImageToImage) {
             // Image-to-Image: Preserve product appearance
             switch (type) {
                 case 'lifestyle':
                     stylePrompt = "Keep the exact same product, same colors, same design. Place it in a beautiful lifestyle scene: modern interior, natural lighting, depth of field, atmospheric background, professional photography.";
-                    strength = 0.4;
                     break;
                 case 'infographic':
                     stylePrompt = "Keep the exact same product, same colors, same design. Place on pure white background, studio lighting, professional e-commerce photo, sharp focus, no shadows.";
-                    strength = 0.3;
                     break;
                 case 'detail':
                     stylePrompt = "Keep the exact same product, same colors, same design. Zoom in to show material texture and details, macro photography, professional lighting, premium quality.";
-                    strength = 0.35;
                     break;
             }
         } else {
@@ -146,26 +142,53 @@ Output ONLY valid JSON (no markdown, no code blocks):
         }
 
         const fullPrompt = useImageToImage
-            ? `${stylePrompt}. IMPORTANT: Preserve original product appearance, colors, and design exactly as shown. Product: ${product.rawUserPrompt || 'as shown in image'}`
+            ? `Edit the provided product image: ${stylePrompt}. Keep the EXACT same product appearance, colors, shape, and design as shown in the input image. Product description: ${product.rawUserPrompt || 'as shown in image'}`
             : stylePrompt;
 
         try {
             const input: any = {
                 prompt: fullPrompt,
-                num_images: 1,
-                aspect_ratio: "1:1",
                 output_format: "png",
                 resolution: "1K",
-                guidance_scale: 7.5,
             };
 
-            // Add image-to-image specific parameters
-            if (useImageToImage) {
-                input.image_url = imageUrl;
-                input.strength = strength;
+            // Add image-to-image specific parameters for Nano Banana Pro
+            if (useImageToImage && imageUrl) {
+                let finalImageUrl = imageUrl;
+
+                // 🔥 FIX: If local file, convert to base64 data URL
+                if (imageUrl.startsWith('/uploads/')) {
+                    const fs = await import('fs/promises');
+                    const path = await import('path');
+                    const filePath = path.join(process.cwd(), imageUrl);
+
+                    try {
+                        const fileBuffer = await fs.readFile(filePath);
+                        const base64 = fileBuffer.toString('base64');
+                        const ext = path.extname(filePath).slice(1).toLowerCase();
+                        const mimeType = ext === 'jpg' ? 'jpeg' : ext;
+                        finalImageUrl = `data:image/${mimeType};base64,${base64}`;
+                        console.log(`📁 Converted local file to base64 (${Math.round(base64.length / 1024)}KB)`);
+                    } catch (err) {
+                        console.error(`❌ Failed to read local file: ${filePath}`, err);
+                    }
+                }
+
+                // Nano Banana Pro uses image_urls array for reference images
+                input.image_urls = [finalImageUrl];
+                console.log(`🖼️ Using source image for ${type}: ${imageUrl.substring(0, 50)}...`);
             }
 
-            const result: any = await fal.subscribe("fal-ai/nano-banana-pro", {
+            console.log(`🎨 Generating ${type} image with prompt:`, fullPrompt.substring(0, 100) + '...');
+
+            // 🔥 FIX: Use correct endpoint based on mode
+            const endpoint = useImageToImage
+                ? "fal-ai/nano-banana-pro/edit"  // Image editing endpoint
+                : "fal-ai/nano-banana-pro";      // Text-to-image endpoint
+
+            console.log(`🔧 Using endpoint: ${endpoint}`);
+
+            const result: any = await fal.subscribe(endpoint, {
                 input,
                 logs: true,
             });
@@ -179,7 +202,8 @@ Output ONLY valid JSON (no markdown, no code blocks):
                 prompt: fullPrompt,
                 type: type,
                 sourceUrl: imageUrl,
-                mode: useImageToImage ? 'image-to-image' : 'text-to-image'
+                mode: useImageToImage ? 'image-to-image' : 'text-to-image',
+                endpoint: endpoint
             };
 
         } catch (error) {

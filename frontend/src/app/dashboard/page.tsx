@@ -43,6 +43,16 @@ const statusConfig: Record<ProductStatus, { label: string; color: string; bg: st
     failed: { label: 'Başarısız', color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', icon: AlertCircle },
 };
 
+// 🔥 Helper: Convert local /uploads/ paths to full backend URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8881';
+const getImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('/uploads/')) {
+        return `${API_BASE_URL}${url}`;
+    }
+    return url;
+};
+
 function getGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) return 'Günaydın';
@@ -61,7 +71,8 @@ export default function DashboardPage() {
 
     const isLoading = productsLoading || creditsLoading;
     const totalProducts = pagination.total;
-    const completedProducts = products.filter(p => p.productStatus === 'completed').length;
+    // 🔥 FIX: Use totalPublished from backend API (only published listings)
+    const activeListings = (pagination as any).totalPublished || 0;
 
     return (
         <div className="space-y-8">
@@ -133,7 +144,7 @@ export default function DashboardPage() {
                         />
                         <StatCard
                             title="Aktif Listeler"
-                            value={completedProducts}
+                            value={activeListings}
                             icon={TrendingUp}
                             accentColor="emerald"
                             change={{ value: 8, label: 'bu hafta' }}
@@ -146,7 +157,7 @@ export default function DashboardPage() {
                         />
                         <StatCard
                             title="AI Üretim"
-                            value={completedProducts}
+                            value={products.filter(p => p.productStatus === 'completed').length}
                             icon={Sparkles}
                             accentColor="violet"
                             change={{ value: 24, label: 'bu ay' }}
@@ -448,9 +459,9 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                 )}
             >
                 <div className="relative aspect-[16/9] bg-zinc-800 overflow-hidden">
-                    {product.sourceImages?.[0]?.imageUrl ? (
+                    {getImageUrl(product.sourceImages?.[0]?.imageUrl) ? (
                         <img
-                            src={product.sourceImages[0].imageUrl}
+                            src={getImageUrl(product.sourceImages?.[0]?.imageUrl)}
                             alt={product.brandName || 'Product'}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />

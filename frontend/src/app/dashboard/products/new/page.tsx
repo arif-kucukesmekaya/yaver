@@ -89,6 +89,16 @@ export default function NewProductPage() {
 
     const [generatingMessage, setGeneratingMessage] = useState('');
 
+    // 🔥 Convert File to base64
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = error => reject(error);
+        });
+    };
+
     const handleSubmit = async () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
@@ -96,11 +106,20 @@ export default function NewProductPage() {
         setGeneratingMessage('Ürün oluşturuluyor...');
 
         try {
+            // 🔥 Convert first image to base64 if exists
+            let imageBase64: string | undefined;
+            if (images.length > 0) {
+                setGeneratingMessage('Görsel yükleniyor...');
+                imageBase64 = await fileToBase64(images[0]);
+                console.log('📁 Image converted to base64, size:', imageBase64.length);
+            }
+
             const productRes = await productsApi.create({
                 brandName: formData.brandName || undefined,
                 categoryId: formData.categoryId,
                 rawUserPrompt: formData.rawUserPrompt,
                 marketplaceIds: selectedMarketplaces,
+                imageBase64, // 🔥 Send base64 image
             });
 
             if (!productRes.success || !productRes.data) throw new Error('Ürün oluşturulamadı');

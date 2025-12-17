@@ -12,7 +12,7 @@ import {
 } from '../../core/database/schema';
 import { authMiddleware } from '../../core/middleware/auth';
 import { NotFoundError, ValidationError } from '../../shared/utils/errors';
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, count, sql } from 'drizzle-orm';
 import { AIService } from '../ai/ai.service';
 import { imageProcessingQueue } from '../../core/database/schema';
 
@@ -28,6 +28,8 @@ const createProductSchema = z.object({
   rawUserPrompt: z.string().min(10).max(5000),
   marketplaceIds: z.array(z.number().int().positive()).optional(),
   imageUrl: z.string().url('Invalid image URL format').max(512).optional(),
+  // 🔥 NEW: Accept base64 image data from frontend
+  imageBase64: z.string().optional(),
 });
 
 const updateProductSchema = z.object({
@@ -71,6 +73,26 @@ productRoutes.get('/', zValidator('query', querySchema), async (c) => {
     .from(products)
     .where(eq(products.userId, user.id));
 
+  // 🔥 Count listings by status for user's products
+  const userProductIds = userProducts.map(p => p.id);
+  let totalPublished = 0;
+  let totalDraft = 0;
+  if (userProductIds.length > 0) {
+    const listingsStats = await db
+      .select({
+        status: marketplaceListings.listingStatus,
+        count: count()
+      })
+      .from(marketplaceListings)
+      .where(sql`${marketplaceListings.productId} IN (SELECT id FROM products WHERE user_id = ${user.id})`)
+      .groupBy(marketplaceListings.listingStatus);
+
+    listingsStats.forEach(stat => {
+      if (stat.status === 'published') totalPublished = stat.count;
+      if (stat.status === 'draft') totalDraft = stat.count;
+    });
+  }
+
   const total = totalResult?.count || 0;
   const totalPages = Math.ceil(total / limit);
 
@@ -82,6 +104,8 @@ productRoutes.get('/', zValidator('query', querySchema), async (c) => {
       limit,
       total,
       totalPages,
+      totalPublished, // 🔥 For "Aktif Listeler"
+      totalDraft,     // 🔥 For "Taslak Listeler"
       hasNext: page < totalPages,
       hasPrev: page > 1,
     },
@@ -134,7 +158,7 @@ productRoutes.get('/:id', async (c) => {
 // POST /products - Create product
 productRoutes.post('/', zValidator('json', createProductSchema), async (c) => {
   const user = c.get('user');
-  const { brandName, categoryId, rawUserPrompt, marketplaceIds, imageUrl } = c.req.valid('json');
+  const { brandName, categoryId, rawUserPrompt, marketplaceIds, imageUrl, imageBase64 } = c.req.valid('json');
 
   // Validate category if provided
   if (categoryId) {
@@ -174,12 +198,40 @@ productRoutes.post('/', zValidator('json', createProductSchema), async (c) => {
     throw new Error('Failed to create product');
   }
 
-  // Add source image if provided
-  if (imageUrl) {
+  // 🔥 Handle source image (base64 or URL)
+  let finalImageUrl = imageUrl;
+
+  if (imageBase64 && !imageUrl) {
+    // Save base64 image to uploads folder
+    const fs = await import('fs/promises');
+    const path = await import('path');
+
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    // Extract mime type and data
+    const matches = imageBase64.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
+    if (matches && matches[2]) {
+      const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+      const base64Data = matches[2];
+      const fileName = `product_${newProduct.id}_${Date.now()}.${ext}`;
+      const filePath = path.join(uploadsDir, fileName);
+
+      await fs.writeFile(filePath, Buffer.from(base64Data, 'base64'));
+
+      // Create URL (relative to server)
+      finalImageUrl = `/uploads/${fileName}`;
+      console.log(`📁 Saved source image: ${finalImageUrl}`);
+    }
+  }
+
+  // Add source image if available
+  if (finalImageUrl) {
     await db.insert(productSourceImages).values({
       productId: newProduct.id,
-      imageUrl,
+      imageUrl: finalImageUrl,
     });
+    console.log(`🖼️ Source image saved for product ${newProduct.id}: ${finalImageUrl}`);
   }
 
   // Add marketplace selections

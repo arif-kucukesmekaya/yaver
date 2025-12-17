@@ -22,6 +22,16 @@ import {
 } from 'lucide-react';
 import type { Product, ProductStatus } from '@/types';
 
+// 🔥 Helper: Convert local /uploads/ paths to full backend URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8881';
+const getImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('/uploads/')) {
+        return `${API_BASE_URL}${url}`;
+    }
+    return url;
+};
+
 const statusConfig: Record<ProductStatus, { label: string; color: string; bg: string; icon: React.ElementType }> = {
     draft: { label: 'Taslak', color: 'text-amber-400', bg: 'bg-amber-500/10', icon: Clock },
     processing: { label: 'İşleniyor', color: 'text-blue-400', bg: 'bg-blue-500/10', icon: Loader2 },
@@ -267,9 +277,9 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             >
                 {/* Image */}
                 <div className="aspect-video bg-zinc-800 flex items-center justify-center relative overflow-hidden">
-                    {(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl) ? (
+                    {getImageUrl(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl) ? (
                         <img
-                            src={product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl}
+                            src={getImageUrl(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl)}
                             alt={product.brandName || 'Product'}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -335,9 +345,9 @@ function ProductRow({ product, index }: { product: Product; index: number }) {
                 className="flex items-center gap-4 p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-xl hover:border-zinc-700 transition-all group"
             >
                 <div className="w-14 h-14 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-                    {(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl) ? (
+                    {getImageUrl(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl) ? (
                         <img
-                            src={product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl}
+                            src={getImageUrl(product.enhancedImages?.[0]?.imageUrl || product.sourceImages?.[0]?.imageUrl)}
                             alt={product.brandName || 'Product'}
                             className="w-full h-full object-cover"
                         />

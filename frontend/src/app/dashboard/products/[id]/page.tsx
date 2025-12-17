@@ -50,9 +50,18 @@ export default function ProductDetailPage() {
     const { toast, success, error: toastError, hideToast } = useToast();
     const [isDeleting, setIsDeleting] = useState(false);
     const [selectedImage, setSelectedImage] = useState<AIEnhancedImage | null>(null);
+    const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+    const [isPublishingAll, setIsPublishingAll] = useState(false); // 🔥 For single publish all button
 
     // 🔥 Loading is based on DB status, NOT local state (survives refresh!)
     const isProcessing = product?.productStatus === 'processing';
+
+    // 🔥 When processing completes, hide overlay and show content
+    useEffect(() => {
+        if (!isProcessing && showLoadingOverlay) {
+            setShowLoadingOverlay(false);
+        }
+    }, [isProcessing, showLoadingOverlay]);
 
     // ⚡ Real-time updates via Server-Sent Events with Polling Fallback
     useEffect(() => {
@@ -172,13 +181,14 @@ export default function ProductDetailPage() {
         }
 
         try {
+            setShowLoadingOverlay(true); // 🔥 Show loading overlay
             await productsApi.generateAI(product.id);
             refetchCredits();
-            success('Başlatıldı', 'AI içerik üretimi başladı...');
-            // Backend will set product_status='processing' → Loading will show automatically
+            // Backend will set product_status='processing' → SSE/Polling will update
             await refetch(); // Refetch to get updated status
         } catch (err) {
             toastError('Hata', 'İçerik üretimi başlatılamadı');
+            setShowLoadingOverlay(false);
             console.error(err);
         }
     };
@@ -195,7 +205,7 @@ export default function ProductDetailPage() {
         <div className="space-y-6">
             {/* 🎨 UNIFIED LOADING OVERLAY - Only show during manual regeneration */}
             <AnimatePresence>
-                {isProcessing && (
+                {showLoadingOverlay && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -339,6 +349,45 @@ export default function ProductDetailPage() {
                     <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-6">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-semibold text-white">Pazaryeri İçerikleri</h3>
+                            {/* 🔥 Single Publish All Button */}
+                            {product.listings && product.listings.length > 0 && product.listings.some(l => l.listingStatus === 'draft') && (
+                                <button
+                                    onClick={async () => {
+                                        setIsPublishingAll(true);
+                                        try {
+                                            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8881';
+                                            const token = localStorage.getItem('accessToken');
+                                            await Promise.all(
+                                                product.listings
+                                                    .filter(l => l.listingStatus === 'draft')
+                                                    .map(l =>
+                                                        fetch(`${API_URL}/products/${product.id}/listings/${l.marketplace?.id}`, {
+                                                            method: 'PATCH',
+                                                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                                            body: JSON.stringify({ listingStatus: 'published' })
+                                                        })
+                                                    )
+                                            );
+                                            refetch();
+                                            refetchCredits();
+                                        } catch (err) {
+                                            console.error('Publish all failed:', err);
+                                        } finally {
+                                            setIsPublishingAll(false);
+                                        }
+                                    }}
+                                    disabled={isPublishingAll}
+                                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {isPublishingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                                    {isPublishingAll ? 'Yayınlanıyor...' : 'Tümünü Yayınla'}
+                                </button>
+                            )}
+                            {product.listings && product.listings.length > 0 && product.listings.every(l => l.listingStatus === 'published') && (
+                                <span className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 text-sm font-medium rounded-xl">
+                                    <CheckCircle className="w-4 h-4" /> Tümü Yayında
+                                </span>
+                            )}
                         </div>
 
                         {product.productStatus === 'processing' ? (
@@ -482,7 +531,7 @@ function ListingCard({ listing }: { listing: MarketplaceListing }) {
                         {copiedField === 'description' ? <><Check className="w-3 h-3 text-green-400" /><span className="text-green-400">Kopyalandı</span></> : <><Copy className="w-3 h-3" />Kopyala</>}
                     </button>
                 </div>
-                <p className="text-white text-sm p-3 bg-white/5 rounded-lg whitespace-pre-wrap max-h-40 overflow-y-auto">{listing.generatedDescription || 'Üretilmemiş'}</p>
+                <p className="text-white text-sm p-3 bg-white/5 rounded-lg whitespace-pre-wrap max-h-80 overflow-y-auto">{listing.generatedDescription || 'Üretilmemiş'}</p>
             </div>
         </motion.div>
     );
