@@ -564,5 +564,4 @@ productRoutes.post('/:id/generate-ai', async (c) => {
 });
 
 export { productRoutes };
-
 export default productRoutes;
