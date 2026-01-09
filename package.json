@@ -8,6 +8,7 @@
     "dev": "bun run src/index.ts",
     "start": "NODE_ENV=production bun run src/index.ts",
     "start:all": "./start.sh",
+    "start:win": "start.bat",
     "build": "bun build src/index.ts --target=bun --outdir=dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
