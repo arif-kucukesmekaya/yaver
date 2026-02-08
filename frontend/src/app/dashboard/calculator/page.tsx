@@ -323,17 +323,17 @@ export default function DashboardCalculatorPage() {
                                 <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[300px] h-[300px] rounded-full blur-[90px] opacity-30 pointer-events-none transition-colors duration-700 ${results.netProfit > 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
 
                                 <div className="relative z-10">
-                                    <h2 className="text-zinc-500 font-medium text-sm mb-6 flex items-center justify-between">
+                                    <h2 className="text-zinc-500 font-bold text-base mb-6 flex items-center justify-between uppercase tracking-wider">
                                         HESAPLAMA DETAYI
-                                        <span className="text-xs px-2 py-1 rounded bg-white/5">{marketplace} • {category}</span>
+                                        <span className="text-sm px-3 py-1 rounded-lg bg-white/5 text-white">{marketplace} • {category}</span>
                                     </h2>
 
                                     {/* Waterfall visual */}
                                     <div className="space-y-3 mb-10">
                                         {/* 1. Price */}
                                         <div className="flex items-center justify-between group">
-                                            <span className="text-zinc-400 text-sm group-hover:text-white transition-colors">Satış Fiyatı</span>
-                                            <span className="font-mono text-xl font-bold text-white transition-all group-hover:tracking-wider">
+                                            <span className="text-zinc-400 text-lg font-medium group-hover:text-white transition-colors">Satış Fiyatı</span>
+                                            <span className="font-mono text-2xl font-bold text-white transition-all group-hover:tracking-wider">
                                                 {Number(price) > 0 ? fmt(Number(price)) : '0,00'} TL
                                             </span>
                                         </div>
@@ -341,28 +341,28 @@ export default function DashboardCalculatorPage() {
                                         {/* 2. Commission */}
                                         <div className="flex items-center justify-between group text-red-400">
                                             <div className="flex items-center">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 mr-3" />
-                                                <span className="text-sm opacity-80 group-hover:opacity-100">Komisyon (%{Math.round(results.commissionRate * 100)}) + Hizmet</span>
+                                                <div className="w-2 h-2 rounded-full bg-red-500 mr-3" />
+                                                <span className="text-base font-medium opacity-80 group-hover:opacity-100">Komisyon (%{Math.round(results.commissionRate * 100)}) + Hizmet</span>
                                             </div>
-                                            <span className="font-mono font-medium opacity-80 group-hover:opacity-100">-{fmt(results.commissionAmount + results.serviceFee)} TL</span>
+                                            <span className="font-mono text-lg font-bold opacity-80 group-hover:opacity-100">-{fmt(results.commissionAmount + results.serviceFee)} TL</span>
                                         </div>
 
                                         {/* 3. Cargo */}
                                         <div className="flex items-center justify-between group text-red-400">
                                             <div className="flex items-center">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 mr-3" />
-                                                <span className="text-sm opacity-80 group-hover:opacity-100">Kargo Ücreti ({cargo})</span>
+                                                <div className="w-2 h-2 rounded-full bg-red-500 mr-3" />
+                                                <span className="text-base font-medium opacity-80 group-hover:opacity-100">Kargo Ücreti ({cargo})</span>
                                             </div>
-                                            <span className="font-mono font-medium opacity-80 group-hover:opacity-100">-{fmt(results.cargoCost)} TL</span>
+                                            <span className="font-mono text-lg font-bold opacity-80 group-hover:opacity-100">-{fmt(results.cargoCost)} TL</span>
                                         </div>
 
                                         {/* 4. Cost */}
                                         <div className="flex items-center justify-between group text-zinc-500 border-b border-white/10 pb-4 mb-4">
                                             <div className="flex items-center">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mr-3" />
-                                                <span className="text-sm">Ürün Maliyeti</span>
+                                                <div className="w-2 h-2 rounded-full bg-zinc-600 mr-3" />
+                                                <span className="text-base font-medium">Ürün Maliyeti</span>
                                             </div>
-                                            <span className="font-mono font-medium">-{fmt(Number(cost) || 0)} TL</span>
+                                            <span className="font-mono text-lg font-bold">-{fmt(Number(cost) || 0)} TL</span>
                                         </div>
                                     </div>
 
