@@ -22,9 +22,12 @@ export class OpenAIService {
   private baseUrl = 'https://api.openai.com/v1';
 
   constructor() {
-    this.apiKey = process.env['OPENAI_API_KEY'] || '';
+    this.apiKey = process.env['SEEDANCE_API_KEY'] || process.env['OPENAI_API_KEY'] || '';
+    // Use Bytedance base URL if configured, otherwise default to OpenAI
+    this.baseUrl = process.env['SEEDANCE_BASE_URL'] || 'https://api.openai.com/v1';
+
     if (!this.apiKey) {
-      console.warn('⚠️ OPENAI_API_KEY not set. AI features will be disabled.');
+      console.warn('⚠️ AI API KEY not set. AI features will be disabled.');
     }
   }
 
@@ -155,13 +158,15 @@ Return JSON format:
           'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 1000,
+          body: JSON.stringify({
+            model: process.env['SEEDANCE_TEXT_MODEL'] || 'gpt-4',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.7,
+            // max_tokens: 1000, // GLM/Ark might have different token limits or require this to be optional
+          }),
         }),
       });
 

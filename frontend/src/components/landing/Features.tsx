@@ -959,7 +959,12 @@ function SkeletonSpeed() {
             </motion.div>
 
             {/* Energy particles */}
-            {[...Array(4)].map((_, i) => (
+            {[
+                { left: '48%', top: '48%' },
+                { left: '52%', top: '53%' },
+                { left: '46%', top: '51%' },
+                { left: '51%', top: '47%' }
+            ].map((pos, i) => (
                 <motion.div
                     key={i}
                     animate={{
@@ -976,8 +981,8 @@ function SkeletonSpeed() {
                     }}
                     className="absolute w-1 h-1 bg-amber-400 rounded-full shadow-[0_0_4px_#f59e0b]"
                     style={{
-                        left: `${45 + Math.random() * 10}%`,
-                        top: `${45 + Math.random() * 10}%`
+                        left: pos.left,
+                        top: pos.top
                     }}
                 />
             ))}

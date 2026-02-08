@@ -152,11 +152,10 @@ export class QueueProcessor {
 
 
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error('💥 Queue Processor Critical Error:', errorMessage);
+            console.error('💥 Queue Processor Critical Error:', error);
 
-            // Log critical system error (skip if no product context)
-            console.error('Critical queue error - skipping database log due to schema constraints');
+            // Log critical system error
+            console.error('Critical queue error - failed to log to database (Database likely down or schema issue)');
         } finally {
             this.isProcessing = false;
         }

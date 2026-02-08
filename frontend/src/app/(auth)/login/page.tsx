@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
-import { useGoogleLogin } from '@react-oauth/google';
+// import { useGoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -48,52 +48,57 @@ export default function LoginPage() {
         }
     };
 
-    const googleLogin = useGoogleLogin({
-        onSuccess: async (tokenResponse) => {
-            setIsGoogleLoading(true);
-            setError('');
-
-            try {
-                // Get user info from Google
-                const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-                });
-                const userInfo = await userInfoResponse.json();
-
-                // Send to our backend
-                const response = await fetch('http://localhost:8881/auth/google', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        credential: tokenResponse.access_token,
-                        email: userInfo.email,
-                        firstName: userInfo.given_name,
-                        lastName: userInfo.family_name,
-                    }),
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Google ile giriş başarısız');
+    /*
+        const googleLogin = useGoogleLogin({
+            onSuccess: async (tokenResponse) => {
+                setIsGoogleLoading(true);
+                setError('');
+    
+                try {
+                    // Get user info from Google
+                    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+                    });
+                    const userInfo = await userInfoResponse.json();
+    
+                    // Send to our backend
+                    const response = await fetch('http://localhost:8881/auth/google', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            credential: tokenResponse.access_token,
+                            email: userInfo.email,
+                            firstName: userInfo.given_name,
+                            lastName: userInfo.family_name,
+                        }),
+                    });
+    
+                    const data = await response.json();
+    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Google ile giriş başarısız');
+                    }
+    
+                    // Store tokens
+                    localStorage.setItem('accessToken', data.data.accessToken);
+                    localStorage.setItem('refreshToken', data.data.refreshToken);
+    
+                    // Redirect to dashboard
+                    window.location.href = '/dashboard';
+                } catch (err) {
+                    setError(err instanceof Error ? err.message : 'Google ile giriş başarısız');
+                } finally {
+                    setIsGoogleLoading(false);
                 }
-
-                // Store tokens
-                localStorage.setItem('accessToken', data.data.accessToken);
-                localStorage.setItem('refreshToken', data.data.refreshToken);
-
-                // Redirect to dashboard
-                window.location.href = '/dashboard';
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Google ile giriş başarısız');
-            } finally {
-                setIsGoogleLoading(false);
-            }
-        },
-        onError: () => {
-            setError('Google ile giriş iptal edildi');
-        },
-    });
+            },
+            onError: () => {
+                setError('Google ile giriş iptal edildi');
+            },
+        });
+        */
+    const googleLogin = () => {
+        alert("Google ile giriş şu an bakımda. Lütfen e-posta ile giriş yapın.");
+    };
 
     return (
         <>

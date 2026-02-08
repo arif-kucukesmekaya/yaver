@@ -1,16 +1,15 @@
-import { fal } from "@fal-ai/client";
+// import OpenAI from "openai";
 import OpenAI from "openai";
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Initialize APIs
 // Note: Keys should be in .env. We use 'mock' to prevent crash if missing during build.
 
-// 🔑 Configure FAL AI
-fal.config({
-    credentials: process.env['FAL_KEY'] || 'mock-key'
-});
-
-const openai = new OpenAI({
-    apiKey: process.env['OPENAI_API_KEY'] || 'mock-key',
+// 🔑 Configure Bytedance/Ark AI Client
+const aiClient = new OpenAI({
+    apiKey: process.env['SEEDANCE_API_KEY'] || 'mock-key',
+    baseURL: process.env['SEEDANCE_BASE_URL'] || 'https://api.openai.com/v1',
 });
 
 export type ImageType = 'lifestyle' | 'infographic' | 'detail';
@@ -69,7 +68,7 @@ Output ONLY valid JSON (no markdown, no code blocks):
         `;
 
         try {
-            const completion = await openai.chat.completions.create({
+            const completion = await aiClient.chat.completions.create({
                 messages: [
                     {
                         role: "system",
@@ -80,9 +79,11 @@ Output ONLY valid JSON (no markdown, no code blocks):
                         content: prompt
                     }
                 ],
-                model: "gpt-4o-mini", // ⚡ FASTER model
-                response_format: { type: "json_object" },
-                temperature: 0.8, // More creative
+                model: process.env['SEEDANCE_TEXT_MODEL'] || "glm-4-7-251222",
+                // GLM-4.7 API Example strict compliance: 
+                // - No response_format: { type: "json_object" }
+                // - Temperature is supported
+                temperature: 0.7,
             });
 
             const content = completion.choices[0]?.message?.content;
@@ -98,13 +99,40 @@ Output ONLY valid JSON (no markdown, no code blocks):
     }
 
     /**
-     * 🖼️ ENHANCED: Generate product images using Fal.ai
+     * 🖼️ ENHANCED: Generate product images using Bytedance/Ark
      * - If source image exists → Image-to-Image (preserves product)
      * - If no source image → Text-to-Image (generates from scratch)
      */
     static async generateProductImage(product: any, type: ImageType, sourceImageUrl?: string) {
         // Get source image from product or parameter
-        const imageUrl = sourceImageUrl || product.sourceImages?.[0]?.imageUrl;
+        let imageUrl = sourceImageUrl || product.sourceImages?.[0]?.imageUrl;
+
+        // 🔥 Local Dev Fix: Convert local URL to Base64 for API
+        if (imageUrl && (imageUrl.startsWith('/') || imageUrl.startsWith('http://localhost'))) {
+            try {
+                // assume starts with /uploads...
+                const relativePath = imageUrl.startsWith('http')
+                    ? new URL(imageUrl).pathname
+                    : imageUrl;
+
+                const filePath = path.join(process.cwd(), relativePath);
+
+                if (fs.existsSync(filePath)) {
+                    const fileBuffer = fs.readFileSync(filePath);
+                    const base64Image = fileBuffer.toString('base64');
+                    // Detect mime type from extension
+                    const ext = path.extname(filePath).toLowerCase().replace('.', '');
+                    const mimeType = ext === 'jpg' ? 'jpeg' : ext; // jpg -> jpeg
+
+                    imageUrl = `data:image/${mimeType};base64,${base64Image}`;
+                    console.log('✅ Converted local image to Base64 for API');
+                } else {
+                    console.warn(`⚠️ Local image file not found: ${filePath}`);
+                }
+            } catch (err) {
+                console.error('Failed to convert local image to base64:', err);
+            }
+        }
 
         // Determine if we should use image-to-image or text-to-image
         const useImageToImage = !!imageUrl;
@@ -116,13 +144,13 @@ Output ONLY valid JSON (no markdown, no code blocks):
             // Image-to-Image: Preserve product appearance
             switch (type) {
                 case 'lifestyle':
-                    stylePrompt = "Keep the exact same product, same colors, same design. Place it in a beautiful lifestyle scene: modern interior, natural lighting, depth of field, atmospheric background, professional photography.";
+                    stylePrompt = "High-end product photography. Place the product in a luxurious, modern lifestyle setting. Soft, natural lighting. 8k resolution. maintain the product's original shape, color, and texture exactly. Do not alter the product. The environment should be blurred background with depth of field.";
                     break;
                 case 'infographic':
-                    stylePrompt = "Keep the exact same product, same colors, same design. Place on pure white background, studio lighting, professional e-commerce photo, sharp focus, no shadows.";
+                    stylePrompt = "Professional commercial product photography. Pure white background (RGB 255,255,255). Soft studio lighting. Eliminate harsh shadows. The product must remain exactly as is. High fidelity, sharp focus, 8k UHD.";
                     break;
                 case 'detail':
-                    stylePrompt = "Keep the exact same product, same colors, same design. Zoom in to show material texture and details, macro photography, professional lighting, premium quality.";
+                    stylePrompt = "Macro photography. Zoom in on the finest details of the product. Show texture and material quality. Professional lighting to highlight craftsmanship. Keep the product design unchanged. Ultra-realistic, 8k.";
                     break;
             }
         } else {
@@ -130,85 +158,76 @@ Output ONLY valid JSON (no markdown, no code blocks):
             const basePrompt = product.rawUserPrompt || product.brandName;
             switch (type) {
                 case 'lifestyle':
-                    stylePrompt = `${basePrompt}. Cinematic lifestyle photography, showing the product in real-world use, atmospheric lighting, depth of field, high resolution, photorealistic.`;
+                    stylePrompt = `${basePrompt}. Award-winning commercial photography. Cinematic lighting, photorealistic, 8k. showcasing the product in a premium environment.`;
                     break;
                 case 'infographic':
-                    stylePrompt = `${basePrompt}. Professional studio product photography, pure white background, soft lighting, sharp focus, clean look, suitable for e-commerce main image.`;
+                    stylePrompt = `${basePrompt}. Studio product shot, isolated on white background. Professional lighting, 4k, advertising standard.`;
                     break;
                 case 'detail':
-                    stylePrompt = `${basePrompt}. Macro close-up shot, extreme detail showing material texture and craftsmanship, shallow depth of field, 8k resolution, professional lighting.`;
+                    stylePrompt = `${basePrompt}. Extreme close-up macro shot. Highlighting material texture. Depth of field, bokeh, 8k resolution.`;
                     break;
             }
         }
 
         const fullPrompt = useImageToImage
-            ? `Edit the provided product image: ${stylePrompt}. Keep the EXACT same product appearance, colors, shape, and design as shown in the input image. Product description: ${product.rawUserPrompt || 'as shown in image'}`
+            ? `(Masterpiece, top quality, best quality, official art, beautiful and aesthetic:1.2). ${stylePrompt}. The input image is the reference product. YOU MUST PRESERVE THE PRODUCT IDENTITY. Do not change the shape, logo, or key features of the product in the input image. Just change the background and lighting.`
             : stylePrompt;
 
         try {
-            const input: any = {
-                prompt: fullPrompt,
-                output_format: "png",
-                resolution: "1K",
-            };
+            const apiKey = process.env['SEEDANCE_API_KEY'];
+            const baseUrl = process.env['SEEDANCE_BASE_URL'];
 
-            // Add image-to-image specific parameters for Nano Banana Pro
-            if (useImageToImage && imageUrl) {
-                let finalImageUrl = imageUrl;
-
-                // 🔥 FIX: If local file, convert to base64 data URL
-                if (imageUrl.startsWith('/uploads/')) {
-                    const fs = await import('fs/promises');
-                    const path = await import('path');
-                    const filePath = path.join(process.cwd(), imageUrl);
-
-                    try {
-                        const fileBuffer = await fs.readFile(filePath);
-                        const base64 = fileBuffer.toString('base64');
-                        const ext = path.extname(filePath).slice(1).toLowerCase();
-                        const mimeType = ext === 'jpg' ? 'jpeg' : ext;
-                        finalImageUrl = `data:image/${mimeType};base64,${base64}`;
-                        console.log(`📁 Converted local file to base64 (${Math.round(base64.length / 1024)}KB)`);
-                    } catch (err) {
-                        console.error(`❌ Failed to read local file: ${filePath}`, err);
-                    }
-                }
-
-                // Nano Banana Pro uses image_urls array for reference images
-                input.image_urls = [finalImageUrl];
-                console.log(`🖼️ Using source image for ${type}: ${imageUrl.substring(0, 50)}...`);
+            if (!apiKey || !baseUrl) {
+                throw new Error("AI Credentials missing");
             }
 
-            console.log(`🎨 Generating ${type} image with prompt:`, fullPrompt.substring(0, 100) + '...');
+            console.log(`🎨 Generating ${type} image via Bytedance...`);
 
-            // 🔥 FIX: Use correct endpoint based on mode
-            const endpoint = useImageToImage
-                ? "fal-ai/nano-banana-pro/edit"  // Image editing endpoint
-                : "fal-ai/nano-banana-pro";      // Text-to-image endpoint
+            // Note: Using Bytedance/Ark standard image generation endpoint
+            // Attempting standard /images/generations with the text model or a specific image model.
 
-            console.log(`🔧 Using endpoint: ${endpoint}`);
-
-            const result: any = await fal.subscribe(endpoint, {
-                input,
-                logs: true,
+            const response = await fetch(`${baseUrl}/images/generations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: process.env['SEEDANCE_IMAGE_MODEL'] || 'seedream-4-5-251128',
+                    prompt: fullPrompt,
+                    // n: 1, 
+                    size: "2048x2048",
+                    image_urls: useImageToImage ? [imageUrl] : undefined, // 🔥 Correct format: Array of strings
+                    response_format: "url",
+                    sequential_image_generation: "disabled",
+                    stream: false,
+                    watermark: false
+                })
             });
 
-            if (!result.data || !result.data.images || result.data.images.length === 0) {
-                throw new Error("No image returned from Fal.ai");
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Image API Error: ${response.status} - ${errText}`);
+            }
+
+            const data = (await response.json()) as { data: { url: string }[] };
+
+            if (!data.data || !data.data[0] || !data.data[0].url) {
+                throw new Error("Invalid image response from API");
             }
 
             return {
-                url: result.data.images[0].url,
+                url: data.data[0].url,
                 prompt: fullPrompt,
                 type: type,
                 sourceUrl: imageUrl,
                 mode: useImageToImage ? 'image-to-image' : 'text-to-image',
-                endpoint: endpoint
+                endpoint: 'bytedance-api'
             };
 
         } catch (error) {
-            console.error('Image Gen Error (Fal.ai):', error);
-            throw new Error(`Failed to generate ${type} image via Nano Banana`);
+            console.error('Image Gen Error:', error);
+            throw new Error(`Failed to generate ${type} image from API`);
         }
     }
 

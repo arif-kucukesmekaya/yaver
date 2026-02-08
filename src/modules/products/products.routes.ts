@@ -497,11 +497,15 @@ productRoutes.post('/:id/generate-ai', async (c) => {
     });
 
     // 4. ⚡ Generate Text Listings (PARALLEL for speed)
+    console.log(`📝 Starting text generation for product ${productId}...`);
+    console.log(`   - Marketplaces count: ${product.marketplaceSelections.length}`);
     const generationResults = [];
 
     for (const selection of product.marketplaceSelections) {
+      console.log(`   - Checking selection for marketplace ID: ${selection.marketplaceId}, Selected: ${selection.isSelected}`);
       if (selection.isSelected) {
         const marketplaceName = selection.marketplace.name;
+        console.log(`   > Generating listing for ${marketplaceName}...`);
 
         try {
           const aiContent = await AIService.generateListing(product, marketplaceName);
@@ -537,7 +541,7 @@ productRoutes.post('/:id/generate-ai', async (c) => {
           generationResults.push({ marketplace: marketplaceName, success: true });
 
         } catch (error) {
-          console.error(`Failed generation for ${marketplaceName}:`, error);
+          console.error(`❌ Failed generation for ${marketplaceName}:`, error);
           generationResults.push({ marketplace: marketplaceName, success: false });
         }
       }
