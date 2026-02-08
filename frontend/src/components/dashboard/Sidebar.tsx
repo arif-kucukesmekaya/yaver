@@ -25,7 +25,7 @@ import {
 const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, emoji: '📊' },
     { label: 'Ürünler', href: '/dashboard/products', icon: Package, emoji: '📦' },
-    { label: 'Kâr Hesapla', href: '/dashboard/calculator', icon: Calculator, emoji: '🧮' },
+    { label: 'Kâr / Zarar Hesapla', href: '/dashboard/calculator', icon: Calculator, emoji: '🧮' },
     { label: 'Krediler', href: '/dashboard/credits', icon: CreditCard, emoji: '💳' },
     { label: 'Ayarlar', href: '/dashboard/settings', icon: Settings, emoji: '⚙️' },
 ];
