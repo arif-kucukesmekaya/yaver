@@ -8,3 +8,5 @@ drizzle/*.sql
 rules
 docs
 example-ui
+uploads/
+

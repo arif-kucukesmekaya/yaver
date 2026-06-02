@@ -1,0 +1,22 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	deleted:    uploads/product_25_1765950999402.png
+	deleted:    uploads/product_26_1765951535205.png
+	deleted:    uploads/product_27_1765952111070.png
+	deleted:    uploads/product_28_1765953424378.png
+	deleted:    uploads/product_29_1765993298462.png
+	deleted:    uploads/product_30_1766047469351.png
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .gitignore
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status_check.txt
+
+git ad
